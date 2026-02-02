@@ -1,10 +1,10 @@
 export const API_ENDPOINTS = {
   // Auth
-  AUTH_REGISTER: '/auth/register',
   AUTH_LOGIN: '/auth/login',
   AUTH_VERIFY_EMAIL: '/auth/verify-email',
   AUTH_REQUEST_PASSWORD_RESET: '/auth/request-password-reset',
   AUTH_RESET_PASSWORD: '/auth/reset-password',
+  AUTH_CHANGE_PASSWORD: '/auth/change-password',
 
   // Hostelites
   HOSTELITES_DASHBOARD: '/hostelites/dashboard',

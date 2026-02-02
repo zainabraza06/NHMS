@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { ChangePasswordCard } from '@/components/ChangePasswordCard';
 import { userService } from '@/services/userService';
 import { USER_ROLES } from '@/utils/constants';
 
@@ -129,6 +130,8 @@ export default function ManagerDashboardPage() {
                   </li>
                 </ul>
               </div>
+
+              <ChangePasswordCard />
             </div>
           </>
         )}

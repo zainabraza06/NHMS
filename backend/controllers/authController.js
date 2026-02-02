@@ -205,3 +205,33 @@ export const resetPassword = asyncHandler(async (req, res) => {
 
   res.json({ message: 'Password reset successfully. You can now login with new password.' });
 });
+
+export const changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'Current password and new password are required' });
+  }
+
+  if (!validatePassword(newPassword)) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters' });
+  }
+
+  const userId = req.user?.userId;
+  if (!userId) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
+
+  const user = await User.findById(userId).select('+password');
+
+  if (!user || !(await user.matchPassword(currentPassword))) {
+    return res.status(401).json({ message: 'Current password is incorrect' });
+  }
+
+  user.password = newPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetTokenExpiry = undefined;
+  await user.save();
+
+  res.json({ message: 'Password changed successfully' });
+});

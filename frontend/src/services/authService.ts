@@ -19,7 +19,7 @@ export const authService = {
 
   async register(data: RegisterData): Promise<AuthResponse> {
     const response = await apiClient.post<AuthResponse>(
-      API_ENDPOINTS.AUTH_REGISTER,
+      '/auth/register',
       data
     );
     return response.data;
@@ -47,6 +47,14 @@ export const authService = {
     const { data } = await apiClient.post<ApiResponse<any>>(
       API_ENDPOINTS.AUTH_RESET_PASSWORD,
       { token, password }
+    );
+    return data;
+  },
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<ApiResponse<any>> {
+    const { data } = await apiClient.post<ApiResponse<any>>(
+      API_ENDPOINTS.AUTH_CHANGE_PASSWORD,
+      { currentPassword, newPassword }
     );
     return data;
   },

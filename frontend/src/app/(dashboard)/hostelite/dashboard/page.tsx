@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { ChangePasswordCard } from '@/components/ChangePasswordCard';
 import { userService } from '@/services/userService';
 import { USER_ROLES } from '@/utils/constants';
 
@@ -28,7 +29,7 @@ export default function HosteliteDashboardPage() {
     const fetchDashboard = async () => {
       try {
         const response = await userService.getHosteliteDashboard();
-        if (response.success && response.data) {
+        if (response && response.data) {
           setStats({
             totalRequests: response.data.totalRequests || 0,
             approvedRequests: response.data.approvedRequests || 0,
@@ -108,6 +109,8 @@ export default function HosteliteDashboardPage() {
               </li>
             </ul>
           </div>
+
+          <ChangePasswordCard />
         </div>
       </div>
     </ProtectedRoute>

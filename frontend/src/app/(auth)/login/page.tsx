@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -84,12 +83,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-white/70">
-            Don't have an account?{' '}
-            <Link href="/register" className="font-bold text-white hover:underline">
-              Register here
-            </Link>
-          </p>
+          <p className="text-white/70">Credentials are provided by the administrator.</p>
         </div>
       </div>
     </div>
