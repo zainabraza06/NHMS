@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  @apply border-border;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-background text-foreground;
+}
+
+@layer components {
+  .glass-bg {
+    @apply bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900;
+  }
+
+  .glass-scope .bg-white {
+    @apply bg-white/10 border border-white/20;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .glass-scope .bg-gray-50 {
+    @apply bg-white/5;
+  }
+
+  .glass-scope .shadow-lg {
+    @apply shadow-2xl;
+  }
+
+  .glass-scope .text-gray-700 {
+    @apply text-white/80;
+  }
+
+  .glass-scope .text-gray-600 {
+    @apply text-white/70;
+  }
+
+  .glass-scope .text-gray-500 {
+    @apply text-white/60;
+  }
+
+  .glass-scope .text-blue-600 {
+    @apply text-cyan-300;
+  }
+
+  .glass-scope .text-green-600 {
+    @apply text-emerald-300;
+  }
+
+  .glass-scope .text-yellow-600 {
+    @apply text-amber-300;
+  }
+
+  .glass-scope .text-red-600 {
+    @apply text-rose-300;
+  }
+
+  .glass-scope .bg-red-50 {
+    @apply bg-red-500/10;
+  }
+
+  .glass-scope .bg-green-50 {
+    @apply bg-emerald-500/10;
+  }
+
+  .glass-scope .text-red-700 {
+    @apply text-rose-200;
+  }
+
+  .glass-scope .text-green-700 {
+    @apply text-emerald-200;
+  }
+
+  .glass-scope input,
+  .glass-scope select,
+  .glass-scope textarea {
+    @apply bg-white/10 border-white/20 text-white;
+  }
+
+  .glass-scope input::placeholder,
+  .glass-scope textarea::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
