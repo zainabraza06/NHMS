@@ -42,7 +42,7 @@ export default function StaffTasksPage() {
       if (response.success) {
         setTasks((prev) =>
           prev.map((task) =>
-            task._id === requestId ? { ...task, status: REQUEST_STATUS.APPROVED } : task
+            task.id === requestId ? { ...task, status: REQUEST_STATUS.APPROVED as any } : task
           )
         );
         setSelectedTask(null);
@@ -91,12 +91,12 @@ export default function StaffTasksPage() {
         ) : (
           <div className="space-y-4">
             {tasks.map((task) => (
-              <div key={task._id} className="bg-white rounded-lg shadow-lg p-6">
+              <div key={task.id} className="bg-white rounded-lg shadow-lg p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h2 className="text-xl font-bold">Cleaning Request</h2>
                     <p className="text-gray-600 text-sm">
-                      Assigned on {new Date(task.submittedDate).toLocaleDateString()}
+                      Assigned on {new Date((task as any).submittedDate).toLocaleDateString()}
                     </p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(task.status)}`}>
@@ -151,7 +151,7 @@ export default function StaffTasksPage() {
 
               {selectedTask.status === REQUEST_STATUS.PENDING && (
                 <button
-                  onClick={() => handleMarkComplete(selectedTask._id)}
+                  onClick={() => handleMarkComplete(selectedTask.id)}
                   disabled={updatingStatus}
                   className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400 mb-4"
                 >

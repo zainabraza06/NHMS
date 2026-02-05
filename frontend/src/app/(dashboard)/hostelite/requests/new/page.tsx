@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { requestService } from '@/services/api';
 import { USER_ROLES } from '@/utils/constants';
+import { LeaveRequestForm, CleaningRequestForm, MessOffRequestForm } from '@/types';
 
 export default function NewRequestPage() {
   const router = useRouter();
@@ -15,20 +16,21 @@ export default function NewRequestPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [leaveForm, setLeaveForm] = useState({
+  const [leaveForm, setLeaveForm] = useState<LeaveRequestForm>({
     startDate: '',
     endDate: '',
     reason: '',
     parentContact: '',
   });
 
-  const [cleaningForm, setCleaningForm] = useState({
+  const [cleaningForm, setCleaningForm] = useState<CleaningRequestForm>({
     roomNumber: '',
-    cleaningType: 'general',
-    priority: 'medium',
+    floor: '',
+    cleaningType: 'ROUTINE',
+    priority: 'MEDIUM',
   });
 
-  const [messOffForm, setMessOffForm] = useState({
+  const [messOffForm, setMessOffForm] = useState<MessOffRequestForm>({
     startDate: '',
     endDate: '',
     reason: '',
@@ -249,6 +251,22 @@ export default function NewRequestPage() {
               </div>
 
               <div>
+                <label htmlFor="floor" className="block text-sm font-medium mb-1">
+                  Floor Number
+                </label>
+                <input
+                  id="floor"
+                  type="text"
+                  value={cleaningForm.floor}
+                  onChange={(e) =>
+                    setCleaningForm({ ...cleaningForm, floor: e.target.value })
+                  }
+                  required
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
                 <label htmlFor="cleaningType" className="block text-sm font-medium mb-1">
                   Cleaning Type
                 </label>
@@ -256,13 +274,13 @@ export default function NewRequestPage() {
                   id="cleaningType"
                   value={cleaningForm.cleaningType}
                   onChange={(e) =>
-                    setCleaningForm({ ...cleaningForm, cleaningType: e.target.value })
+                    setCleaningForm({ ...cleaningForm, cleaningType: e.target.value as any })
                   }
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="general">General</option>
-                  <option value="deep">Deep Cleaning</option>
-                  <option value="emergency">Emergency</option>
+                  <option value="ROUTINE">Routine</option>
+                  <option value="DEEP_CLEANING">Deep Cleaning</option>
+                  <option value="EMERGENCY">Emergency</option>
                 </select>
               </div>
 
@@ -274,13 +292,13 @@ export default function NewRequestPage() {
                   id="priority"
                   value={cleaningForm.priority}
                   onChange={(e) =>
-                    setCleaningForm({ ...cleaningForm, priority: e.target.value })
+                    setCleaningForm({ ...cleaningForm, priority: e.target.value as any })
                   }
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
                 </select>
               </div>
 

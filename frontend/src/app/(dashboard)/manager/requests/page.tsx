@@ -3,10 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { userService } from '@/services/userService';
-import { USER_ROLES, REQUEST_STATUS } from '@/utils/constants';
-import { Request } from '@/types';
 import { requestService } from '@/services/api';
+import { USER_ROLES, REQUEST_STATUS } from '@/utils/constants';
+import { Request, LeaveRequest, CleaningRequest, MessOffRequest } from '@/types';
 
 export default function ManagerRequestsPage() {
   const { user } = useAuth();
@@ -39,10 +38,10 @@ export default function ManagerRequestsPage() {
     setActionLoading(true);
     try {
       const response = await requestService.approveRequest(requestId);
-      if (response.success) {
+      if (response.success && response.data) {
         setRequests((prev) =>
           prev.map((req) =>
-            req._id === requestId ? { ...req, status: REQUEST_STATUS.APPROVED } : req
+            req.id === requestId ? { ...req, status: REQUEST_STATUS.APPROVED as any } : req
           )
         );
         setSelectedRequest(null);
@@ -60,10 +59,10 @@ export default function ManagerRequestsPage() {
     setActionLoading(true);
     try {
       const response = await requestService.rejectRequest(requestId);
-      if (response.success) {
+      if (response.success && response.data) {
         setRequests((prev) =>
           prev.map((req) =>
-            req._id === requestId ? { ...req, status: REQUEST_STATUS.REJECTED } : req
+            req.id === requestId ? { ...req, status: REQUEST_STATUS.REJECTED as any } : req
           )
         );
         setSelectedRequest(null);
@@ -85,10 +84,29 @@ export default function ManagerRequestsPage() {
         return 'bg-red-100 text-red-800';
       case REQUEST_STATUS.PENDING:
         return 'bg-yellow-100 text-yellow-800';
+      case REQUEST_STATUS.CANCELLED:
+        return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const getRequestTypeLabel = (requestType: string) => {
+    switch (requestType) {
+      case 'LEAVE_REQUEST':
+        return 'Leave Request';
+      case 'CLEANING_REQUEST':
+        return 'Cleaning Request';
+      case 'MESS_OFF_REQUEST':
+        return 'Mess-Off Request';
+      default:
+        return requestType;
+    }
+  };
+
+  const isLeaveRequest = (req: Request): req is LeaveRequest => req.requestType === 'LEAVE_REQUEST';
+  const isCleaningRequest = (req: Request): req is CleaningRequest => req.requestType === 'CLEANING_REQUEST';
+  const isMessOffRequest = (req: Request): req is MessOffRequest => req.requestType === 'MESS_OFF_REQUEST';
 
   return (
     <ProtectedRoute allowedRoles={[USER_ROLES.HOSTEL_MANAGER]}>
@@ -112,12 +130,12 @@ export default function ManagerRequestsPage() {
         ) : (
           <div className="space-y-4">
             {requests.map((request) => (
-              <div key={request._id} className="bg-white rounded-lg shadow-lg p-6">
+              <div key={request.id} className="bg-white rounded-lg shadow-lg p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h2 className="text-xl font-bold capitalize">{request.type}</h2>
+                    <h2 className="text-xl font-bold">{getRequestTypeLabel(request.requestType)}</h2>
                     <p className="text-gray-600 text-sm">
-                      Submitted on {new Date(request.submittedDate).toLocaleDateString()}
+                      Submitted on {new Date(request.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(request.status)}`}>
@@ -138,8 +156,8 @@ export default function ManagerRequestsPage() {
 
         {selectedRequest && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-              <h2 className="text-2xl font-bold mb-4 capitalize">{selectedRequest.type} Request</h2>
+            <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <h2 className="text-2xl font-bold mb-4">{getRequestTypeLabel(selectedRequest.requestType)} Request</h2>
 
               <div className="space-y-3 mb-6">
                 <p>
@@ -147,37 +165,95 @@ export default function ManagerRequestsPage() {
                 </p>
                 <p>
                   <span className="font-semibold">Submitted:</span>{' '}
-                  {new Date(selectedRequest.submittedDate).toLocaleDateString()}
+                  {new Date(selectedRequest.createdAt).toLocaleDateString()}
                 </p>
 
-                {selectedRequest.type === 'leave' && (
+                {isLeaveRequest(selectedRequest) && (
                   <>
                     <p>
                       <span className="font-semibold">From:</span>{' '}
-                      {new Date((selectedRequest as any).startDate).toLocaleDateString()}
+                      {new Date(selectedRequest.startDate).toLocaleDateString()}
                     </p>
                     <p>
                       <span className="font-semibold">To:</span>{' '}
-                      {new Date((selectedRequest as any).endDate).toLocaleDateString()}
+                      {new Date(selectedRequest.endDate).toLocaleDateString()}
                     </p>
                     <p>
-                      <span className="font-semibold">Reason:</span> {(selectedRequest as any).reason}
+                      <span className="font-semibold">Duration:</span> {selectedRequest.duration} days
                     </p>
+                    <p>
+                      <span className="font-semibold">Reason:</span> {selectedRequest.reason}
+                    </p>
+                    {selectedRequest.parentContact && (
+                      <p>
+                        <span className="font-semibold">Parent Contact:</span> {selectedRequest.parentContact}
+                      </p>
+                    )}
+                  </>
+                )}
+
+                {isCleaningRequest(selectedRequest) && (
+                  <>
+                    <p>
+                      <span className="font-semibold">Room:</span> {selectedRequest.roomNumber}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Floor:</span> {selectedRequest.floor}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Type:</span> {selectedRequest.cleaningType}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Priority:</span> {selectedRequest.priority}
+                    </p>
+                    {selectedRequest.notes && (
+                      <p>
+                        <span className="font-semibold">Notes:</span> {selectedRequest.notes}
+                      </p>
+                    )}
+                  </>
+                )}
+
+                {isMessOffRequest(selectedRequest) && (
+                  <>
+                    <p>
+                      <span className="font-semibold">From:</span>{' '}
+                      {new Date(selectedRequest.startDate).toLocaleDateString()}
+                    </p>
+                    <p>
+                      <span className="font-semibold">To:</span>{' '}
+                      {new Date(selectedRequest.endDate).toLocaleDateString()}
+                    </p>
+                    {selectedRequest.reason && (
+                      <p>
+                        <span className="font-semibold">Reason:</span> {selectedRequest.reason}
+                      </p>
+                    )}
+                    {selectedRequest.mealCount && (
+                      <p>
+                        <span className="font-semibold">Meal Count:</span> {selectedRequest.mealCount}
+                      </p>
+                    )}
+                    {selectedRequest.refundAmount && (
+                      <p>
+                        <span className="font-semibold">Refund Amount:</span> Rs. {selectedRequest.refundAmount}
+                      </p>
+                    )}
                   </>
                 )}
               </div>
 
               {selectedRequest.status === REQUEST_STATUS.PENDING && (
-                <div className="flex space-x-4">
+                <div className="flex space-x-4 mb-4">
                   <button
-                    onClick={() => handleApprove(selectedRequest._id)}
+                    onClick={() => handleApprove(selectedRequest.id)}
                     disabled={actionLoading}
                     className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400"
                   >
                     Approve
                   </button>
                   <button
-                    onClick={() => handleReject(selectedRequest._id)}
+                    onClick={() => handleReject(selectedRequest.id)}
                     disabled={actionLoading}
                     className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 disabled:bg-gray-400"
                   >
@@ -188,7 +264,7 @@ export default function ManagerRequestsPage() {
 
               <button
                 onClick={() => setSelectedRequest(null)}
-                className="w-full mt-4 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600"
+                className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600"
               >
                 Close
               </button>

@@ -1,10 +1,9 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { config } from '../config/env.js';
 
 export const generateToken = (userId, role) => {
-  return jwt.sign({ userId, role }, config.jwtSecret, {
-    expiresIn: config.jwtExpire
+  return jwt.sign({ userId, role }, process.env.JWT_SECRET || 'nhms_super_secret_jwt_key_2026', {
+    expiresIn: process.env.JWT_EXPIRE || '7d'
   });
 };
 
@@ -22,7 +21,7 @@ export const hashedToken = (token) => {
 
 export const verifyToken = (token) => {
   try {
-    return jwt.verify(token, config.jwtSecret);
+    return jwt.verify(token, process.env.JWT_SECRET || 'nhms_super_secret_jwt_key_2026');
   } catch (error) {
     return null;
   }

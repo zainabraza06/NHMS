@@ -6,41 +6,43 @@ export type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
 
 // User Types
 export interface User {
-  id: string;
+  _id?: string;
+  id?: string;
   email: string;
   firstName: string;
   lastName: string;
   phoneNumber: string;
   role: UserRole;
-  active: boolean;
-  isEmailVerified: boolean;
-  createdAt: string;
-  updatedAt: string;
+  active?: boolean;
+  isEmailVerified?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Hostelite extends User {
   universityId: string;
   department: string;
-  academicYear: number;
+  academicYear: string;
   roomNumber: string;
-  admissionDate: string;
-  validUpto: string;
-  hostel: Hostel;
+  admissionDate?: string;
+  validUpto?: string;
+  hostel?: string | Hostel;
+  _id?: string;
 }
 
 export interface CleaningStaff extends User {
-  staffId: string;
-  assignedHostels: Hostel[];
-  assignedFloors: string[];
+  staffId?: string;
+  assignedHostels?: (string | Hostel)[];
+  assignedFloors?: string[];
   salary?: number;
-  joinDate: string;
-  shiftTiming: 'MORNING' | 'AFTERNOON' | 'NIGHT';
+  joinDate?: string;
+  shiftTiming?: 'MORNING' | 'AFTERNOON' | 'NIGHT';
 }
 
 export interface HostelManager extends User {
-  managerId: string;
-  hostel: Hostel;
-  joinDate: string;
+  managerId?: string;
+  hostel?: string | Hostel;
+  joinDate?: string;
 }
 
 // Hostel Type
@@ -116,21 +118,36 @@ export interface RegisterData {
   // Hostelite specific
   universityId?: string;
   department?: string;
-  academicYear?: number;
+  academicYear?: string;
   roomNumber?: string;
   hostel?: string;
 }
 
-export interface AuthResponse {
+// API Response Types
+export interface ApiResponse<T = any> {
+  success?: boolean;
   message: string;
+  data?: T;
+  error?: string;
   token?: string;
   user?: User;
   userId?: string;
+  pagination?: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
+}
+
+export interface AuthResponse extends ApiResponse<User> {
+  token?: string;
 }
 
 export interface AuthActionResult {
   success: boolean;
   error?: string;
+  data?: any;
 }
 
 // Request Form Types
@@ -167,19 +184,6 @@ export interface DashboardStats {
   totalStaff?: number;
   occupancyRate?: string;
   pendingRequests?: number;
-}
-
-// API Response Types
-export interface ApiResponse<T> {
-  message: string;
-  data?: T;
-  error?: string;
-  pagination?: {
-    total: number;
-    page: number;
-    limit: number;
-    pages: number;
-  };
 }
 
 // Auth Context

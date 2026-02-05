@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import dotenv from 'dotenv';
 import { connectDB } from './config/database.js';
-import { config } from './config/env.js';
 import { errorHandler } from './middleware/errorHandler.js';
+
+dotenv.config();
 
 // Import Routes
 import authRoutes from './routes/authRoutes.js';
@@ -47,8 +49,8 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // Start server
-const PORT = config.port;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${config.nodeEnv}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });

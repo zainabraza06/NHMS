@@ -16,7 +16,7 @@ export default function ManagerHostelitesPage() {
   useEffect(() => {
     const fetchHostelites = async () => {
       try {
-        const response = await userService.getManagerAllHostelites();
+        const response = await userService.getAllHostelites();
         if (response.success && response.data) {
           setHostelites(Array.isArray(response.data) ? response.data : []);
         } else {

@@ -38,12 +38,26 @@ export default function HosteliteProfilePage() {
       try {
         const response = await userService.getHosteliteProfile();
         if (response.success && response.data) {
-          setProfile(response.data);
-          setFormData({
+          const profileData: UserProfile = {
+            id: response.data._id || response.data.id || '',
             firstName: response.data.firstName,
             lastName: response.data.lastName,
+            email: response.data.email,
             phoneNumber: response.data.phoneNumber,
+            universityId: response.data.universityId,
+            department: response.data.department,
+            academicYear: String(response.data.academicYear),
+            roomNumber: response.data.roomNumber,
+            hostel: typeof response.data.hostel === 'string' ? response.data.hostel : response.data.hostel?.name,
+          };
+          setProfile(profileData);
+          setFormData({
+            firstName: profileData.firstName,
+            lastName: profileData.lastName,
+            phoneNumber: profileData.phoneNumber,
           });
+        } else {
+          setError('Failed to load profile');
         }
       } catch (err) {
         setError('Failed to load profile');

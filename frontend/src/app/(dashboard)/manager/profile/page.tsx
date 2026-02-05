@@ -15,7 +15,6 @@ interface ManagerProfile {
   managerId?: string;
   hostel?: string;
   joinDate?: string;
-  department?: string;
 }
 
 export default function ManagerProfilePage() {
@@ -37,12 +36,24 @@ export default function ManagerProfilePage() {
       try {
         const response = await userService.getManagerProfile();
         if (response.success && response.data) {
-          setProfile(response.data);
-          setFormData({
+          const profileData: ManagerProfile = {
+            id: response.data._id || response.data.id || '',
             firstName: response.data.firstName,
             lastName: response.data.lastName,
+            email: response.data.email,
             phoneNumber: response.data.phoneNumber,
+            managerId: response.data.managerId,
+            hostel: typeof response.data.hostel === 'string' ? response.data.hostel : response.data.hostel?.name,
+            joinDate: response.data.joinDate,
+          };
+          setProfile(profileData);
+          setFormData({
+            firstName: profileData.firstName,
+            lastName: profileData.lastName,
+            phoneNumber: profileData.phoneNumber,
           });
+        } else {
+          setError('Failed to load profile');
         }
       } catch (err) {
         setError('Failed to load profile');

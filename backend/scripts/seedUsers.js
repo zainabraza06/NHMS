@@ -1,9 +1,12 @@
+import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { connectDB } from '../config/database.js';
 import Hostel from '../models/Hostel.js';
 import Hostelite from '../models/Hostelite.js';
 import CleaningStaff from '../models/CleaningStaff.js';
 import HostelManager from '../models/HostelManager.js';
+
+dotenv.config();
 
 const DEFAULT_PASSWORD = 'ChangeMe123!';
 

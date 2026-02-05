@@ -16,7 +16,7 @@ export default function ManagerStaffPage() {
   useEffect(() => {
     const fetchStaff = async () => {
       try {
-        const response = await userService.getManagerAllStaff();
+        const response = await userService.getAllStaff();
         if (response.success && response.data) {
           setStaff(Array.isArray(response.data) ? response.data : []);
         } else {

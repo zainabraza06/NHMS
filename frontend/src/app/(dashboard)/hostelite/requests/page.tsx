@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { userService } from '@/services/userService';
+import { requestService } from '@/services/api';
 import { USER_ROLES, REQUEST_STATUS } from '@/utils/constants';
-import { Request } from '@/types';
+import { Request, LeaveRequest, CleaningRequest, MessOffRequest } from '@/types';
 
 export default function HosteliteRequestsPage() {
   const { user } = useAuth();
@@ -17,10 +17,9 @@ export default function HosteliteRequestsPage() {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await userService.getHosteliteProfile();
+        const response = await requestService.getMyRequests();
         if (response.success && response.data) {
-          // Fetch requests from the API
-          setRequests(response.data.requests || []);
+          setRequests(Array.isArray(response.data) ? response.data : []);
         } else {
           setError('Failed to load requests');
         }
@@ -42,10 +41,29 @@ export default function HosteliteRequestsPage() {
         return 'bg-red-100 text-red-800';
       case REQUEST_STATUS.PENDING:
         return 'bg-yellow-100 text-yellow-800';
+      case REQUEST_STATUS.CANCELLED:
+        return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const getRequestTypeLabel = (requestType: string) => {
+    switch (requestType) {
+      case 'LEAVE_REQUEST':
+        return 'Leave Request';
+      case 'CLEANING_REQUEST':
+        return 'Cleaning Request';
+      case 'MESS_OFF_REQUEST':
+        return 'Mess-Off Request';
+      default:
+        return requestType;
+    }
+  };
+
+  const isLeaveRequest = (req: Request): req is LeaveRequest => req.requestType === 'LEAVE_REQUEST';
+  const isCleaningRequest = (req: Request): req is CleaningRequest => req.requestType === 'CLEANING_REQUEST';
+  const isMessOffRequest = (req: Request): req is MessOffRequest => req.requestType === 'MESS_OFF_REQUEST';
 
   return (
     <ProtectedRoute allowedRoles={[USER_ROLES.HOSTELITE]}>
@@ -83,12 +101,12 @@ export default function HosteliteRequestsPage() {
         ) : (
           <div className="space-y-4">
             {requests.map((request) => (
-              <div key={request._id} className="bg-white rounded-lg shadow-lg p-6">
+              <div key={request.id} className="bg-white rounded-lg shadow-lg p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h2 className="text-xl font-bold capitalize">{request.type}</h2>
+                    <h2 className="text-xl font-bold">{getRequestTypeLabel(request.requestType)}</h2>
                     <p className="text-gray-600 text-sm">
-                      Submitted on {new Date(request.submittedDate).toLocaleDateString()}
+                      Submitted on {new Date(request.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(request.status)}`}>
@@ -96,43 +114,77 @@ export default function HosteliteRequestsPage() {
                   </span>
                 </div>
 
-                {request.type === 'leave' && (
+                {isLeaveRequest(request) && (
                   <div className="space-y-2 mb-4">
                     <p>
                       <span className="font-semibold">From:</span>{' '}
-                      {new Date((request as any).startDate).toLocaleDateString()}
+                      {new Date(request.startDate).toLocaleDateString()}
                     </p>
                     <p>
                       <span className="font-semibold">To:</span>{' '}
-                      {new Date((request as any).endDate).toLocaleDateString()}
+                      {new Date(request.endDate).toLocaleDateString()}
                     </p>
                     <p>
-                      <span className="font-semibold">Reason:</span> {(request as any).reason}
+                      <span className="font-semibold">Duration:</span> {request.duration} days
                     </p>
+                    <p>
+                      <span className="font-semibold">Reason:</span> {request.reason}
+                    </p>
+                    {request.parentContact && (
+                      <p>
+                        <span className="font-semibold">Parent Contact:</span> {request.parentContact}
+                      </p>
+                    )}
                   </div>
                 )}
 
-                {request.type === 'cleaning' && (
+                {isCleaningRequest(request) && (
                   <div className="space-y-2 mb-4">
                     <p>
-                      <span className="font-semibold">Room:</span> {(request as any).roomNumber}
+                      <span className="font-semibold">Room:</span> {request.roomNumber}
                     </p>
                     <p>
-                      <span className="font-semibold">Type:</span> {(request as any).cleaningType}
+                      <span className="font-semibold">Floor:</span> {request.floor}
                     </p>
+                    <p>
+                      <span className="font-semibold">Type:</span> {request.cleaningType}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Priority:</span> {request.priority}
+                    </p>
+                    {request.notes && (
+                      <p>
+                        <span className="font-semibold">Notes:</span> {request.notes}
+                      </p>
+                    )}
                   </div>
                 )}
 
-                {request.type === 'messOff' && (
+                {isMessOffRequest(request) && (
                   <div className="space-y-2 mb-4">
                     <p>
                       <span className="font-semibold">From:</span>{' '}
-                      {new Date((request as any).startDate).toLocaleDateString()}
+                      {new Date(request.startDate).toLocaleDateString()}
                     </p>
                     <p>
                       <span className="font-semibold">To:</span>{' '}
-                      {new Date((request as any).endDate).toLocaleDateString()}
+                      {new Date(request.endDate).toLocaleDateString()}
                     </p>
+                    {request.reason && (
+                      <p>
+                        <span className="font-semibold">Reason:</span> {request.reason}
+                      </p>
+                    )}
+                    {request.mealCount && (
+                      <p>
+                        <span className="font-semibold">Meal Count:</span> {request.mealCount}
+                      </p>
+                    )}
+                    {request.refundAmount && (
+                      <p>
+                        <span className="font-semibold">Refund Amount:</span> Rs. {request.refundAmount}
+                      </p>
+                    )}
                   </div>
                 )}
 

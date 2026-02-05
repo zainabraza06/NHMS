@@ -38,12 +38,28 @@ export default function StaffProfilePage() {
       try {
         const response = await userService.getStaffProfile();
         if (response.success && response.data) {
-          setProfile(response.data);
-          setFormData({
+          const profileData: StaffProfile = {
+            id: response.data._id || response.data.id || '',
             firstName: response.data.firstName,
             lastName: response.data.lastName,
+            email: response.data.email,
             phoneNumber: response.data.phoneNumber,
+            staffId: response.data.staffId,
+            assignedHostels: response.data.assignedHostels?.map((h: any) => 
+              typeof h === 'string' ? h : h?.name
+            ),
+            assignedFloors: response.data.assignedFloors,
+            salary: response.data.salary,
+            joinDate: response.data.joinDate,
+          };
+          setProfile(profileData);
+          setFormData({
+            firstName: profileData.firstName,
+            lastName: profileData.lastName,
+            phoneNumber: profileData.phoneNumber,
           });
+        } else {
+          setError('Failed to load profile');
         }
       } catch (err) {
         setError('Failed to load profile');
