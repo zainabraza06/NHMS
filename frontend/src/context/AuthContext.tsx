@@ -43,9 +43,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         authService.setUser(response.user);
         setToken(response.token);
         setUser(response.user);
+        return { success: true, user: response.user };
       }
 
-      return { success: true };
+      return { success: false, error: 'Login failed' };
     } catch (err: any) {
       const message = err.response?.data?.message || 'Login failed';
       setError(message);

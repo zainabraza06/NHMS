@@ -148,6 +148,7 @@ export interface AuthActionResult {
   success: boolean;
   error?: string;
   data?: any;
+  user?: User;
 }
 
 // Request Form Types

@@ -13,6 +13,7 @@ import hosteliteRoutes from './routes/hosteliteRoutes.js';
 import staffRoutes from './routes/staffRoutes.js';
 import managerRoutes from './routes/managerRoutes.js';
 import requestRoutes from './routes/requestRoutes.js';
+import billingRoutes from './routes/billingRoutes.js';
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use('/api/hostelites', hosteliteRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api/manager', managerRoutes);
 app.use('/api/requests', requestRoutes);
+app.use('/api/billing', billingRoutes);
 
 // 404 handler
 app.use((req, res) => {

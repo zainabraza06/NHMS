@@ -14,7 +14,7 @@ export const getManagerDashboard = asyncHandler(async (req, res) => {
   const manager = await HostelManager.findById(managerId).populate('hostel');
 
   if (!manager) {
-    return res.status(404).json({ message: 'Manager not found' });
+    return res.status(404).json({ success: false, message: 'Manager not found' });
   }
 
   const hostel = manager.hostel;
@@ -27,21 +27,25 @@ export const getManagerDashboard = asyncHandler(async (req, res) => {
   });
 
   res.json({
-    manager: {
-      _id: manager._id,
-      firstName: manager.firstName,
-      lastName: manager.lastName,
-      email: manager.email,
-      managerId: manager.managerId,
-      hostel: manager.hostel
-    },
-    stats: {
-      totalHostelites: hosteliteCount,
-      totalStaff: staffCount,
-      pendingRequests,
-      occupiedRooms: hostel.occupiedRooms,
-      totalRooms: hostel.totalRooms,
-      occupancyRate: ((hostel.occupiedRooms / hostel.totalRooms) * 100).toFixed(2) + '%'
+    success: true,
+    message: 'Dashboard data retrieved successfully',
+    data: {
+      manager: {
+        _id: manager._id,
+        firstName: manager.firstName,
+        lastName: manager.lastName,
+        email: manager.email,
+        managerId: manager.managerId,
+        hostel: manager.hostel
+      },
+      stats: {
+        totalHostelites: hosteliteCount,
+        totalStaff: staffCount,
+        pendingRequests,
+        occupiedRooms: hostel.occupiedRooms,
+        totalRooms: hostel.totalRooms,
+        occupancyRate: ((hostel.occupiedRooms / hostel.totalRooms) * 100).toFixed(2) + '%'
+      }
     }
   });
 });
@@ -52,7 +56,7 @@ export const getManagerRequests = asyncHandler(async (req, res) => {
 
   const manager = await HostelManager.findById(managerId);
   if (!manager) {
-    return res.status(404).json({ message: 'Manager not found' });
+    return res.status(404).json({ success: false, message: 'Manager not found' });
   }
 
   const hostelites = await Hostelite.find({ hostel: manager.hostel }).select('_id');
@@ -73,7 +77,9 @@ export const getManagerRequests = asyncHandler(async (req, res) => {
   const total = await Request.countDocuments(filter);
 
   res.json({
-    requests,
+    success: true,
+    message: 'Manager requests retrieved successfully',
+    data: requests,
     pagination: {
       total,
       page: parseInt(page),
@@ -93,10 +99,14 @@ export const approveRequest = asyncHandler(async (req, res) => {
   ).populate('hostelite');
 
   if (!request) {
-    return res.status(404).json({ message: 'Request not found' });
+    return res.status(404).json({ success: false, message: 'Request not found' });
   }
 
-  res.json({ message: 'Request approved successfully', request });
+  res.json({ 
+    success: true,
+    message: 'Request approved successfully', 
+    data: request 
+  });
 });
 
 export const rejectRequest = asyncHandler(async (req, res) => {
@@ -110,10 +120,14 @@ export const rejectRequest = asyncHandler(async (req, res) => {
   ).populate('hostelite');
 
   if (!request) {
-    return res.status(404).json({ message: 'Request not found' });
+    return res.status(404).json({ success: false, message: 'Request not found' });
   }
 
-  res.json({ message: 'Request rejected successfully', request });
+  res.json({ 
+    success: true,
+    message: 'Request rejected successfully', 
+    data: request 
+  });
 });
 
 export const getManagerHostelites = asyncHandler(async (req, res) => {
@@ -122,7 +136,7 @@ export const getManagerHostelites = asyncHandler(async (req, res) => {
 
   const manager = await HostelManager.findById(managerId);
   if (!manager) {
-    return res.status(404).json({ message: 'Manager not found' });
+    return res.status(404).json({ success: false, message: 'Manager not found' });
   }
 
   const filter = { hostel: manager.hostel };
@@ -139,7 +153,9 @@ export const getManagerHostelites = asyncHandler(async (req, res) => {
   const total = await Hostelite.countDocuments(filter);
 
   res.json({
-    hostelites,
+    success: true,
+    message: 'Manager hostelites retrieved successfully',
+    data: hostelites,
     pagination: {
       total,
       page: parseInt(page),
@@ -155,7 +171,7 @@ export const getManagerStaff = asyncHandler(async (req, res) => {
 
   const manager = await HostelManager.findById(managerId);
   if (!manager) {
-    return res.status(404).json({ message: 'Manager not found' });
+    return res.status(404).json({ success: false, message: 'Manager not found' });
   }
 
   const skip = (page - 1) * limit;
@@ -168,7 +184,9 @@ export const getManagerStaff = asyncHandler(async (req, res) => {
   const total = await CleaningStaff.countDocuments({ assignedHostels: manager.hostel });
 
   res.json({
-    staff,
+    success: true,
+    message: 'Manager staff retrieved successfully',
+    data: staff,
     pagination: {
       total,
       page: parseInt(page),
@@ -184,10 +202,14 @@ export const getManagerProfile = asyncHandler(async (req, res) => {
   const manager = await HostelManager.findById(managerId).populate('hostel');
 
   if (!manager) {
-    return res.status(404).json({ message: 'Manager not found' });
+    return res.status(404).json({ success: false, message: 'Manager not found' });
   }
 
-  res.json({ manager });
+  res.json({ 
+    success: true,
+    message: 'Profile retrieved successfully',
+    data: manager 
+  });
 });
 
 export const updateManagerProfile = asyncHandler(async (req, res) => {
@@ -205,8 +227,12 @@ export const updateManagerProfile = asyncHandler(async (req, res) => {
   );
 
   if (!manager) {
-    return res.status(404).json({ message: 'Manager not found' });
+    return res.status(404).json({ success: false, message: 'Manager not found' });
   }
 
-  res.json({ message: 'Profile updated successfully', manager });
+  res.json({ 
+    success: true,
+    message: 'Profile updated successfully', 
+    data: manager 
+  });
 });

@@ -76,31 +76,31 @@ export default function ManagerRequestsPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyles = (status: string) => {
     switch (status) {
       case REQUEST_STATUS.APPROVED:
-        return 'bg-green-100 text-green-800';
+        return 'bg-emerald-100 text-emerald-700 border-emerald-200';
       case REQUEST_STATUS.REJECTED:
-        return 'bg-red-100 text-red-800';
+        return 'bg-rose-100 text-rose-700 border-rose-200';
       case REQUEST_STATUS.PENDING:
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-amber-100 text-amber-700 border-amber-200';
       case REQUEST_STATUS.CANCELLED:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-600 border-gray-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-600 border-gray-200';
     }
   };
 
-  const getRequestTypeLabel = (requestType: string) => {
+  const getRequestTypeInfo = (requestType: string) => {
     switch (requestType) {
       case 'LEAVE_REQUEST':
-        return 'Leave Request';
+        return { label: 'Leave Request', icon: '🏠' };
       case 'CLEANING_REQUEST':
-        return 'Cleaning Request';
+        return { label: 'Cleaning Request', icon: '🧹' };
       case 'MESS_OFF_REQUEST':
-        return 'Mess-Off Request';
+        return { label: 'Mess-Off Request', icon: '🍽️' };
       default:
-        return requestType;
+        return { label: requestType, icon: '📋' };
     }
   };
 
@@ -110,135 +110,107 @@ export default function ManagerRequestsPage() {
 
   return (
     <ProtectedRoute allowedRoles={[USER_ROLES.HOSTEL_MANAGER]}>
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8">All Requests</h1>
+      <div className="page-container">
+        <h1 className="section-header">All Requests</h1>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="alert-error mb-6">
             {error}
           </div>
         )}
 
         {isLoading ? (
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div className="flex justify-center py-12">
+            <div className="spinner"></div>
           </div>
         ) : requests.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-            <p className="text-gray-600">No requests found</p>
+          <div className="stat-card text-center py-12 animate-scale-in">
+            <div className="text-6xl mb-4">📋</div>
+            <p className="text-gray-500 text-lg">No requests found</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {requests.map((request) => (
-              <div key={request.id} className="bg-white rounded-lg shadow-lg p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h2 className="text-xl font-bold">{getRequestTypeLabel(request.requestType)}</h2>
-                    <p className="text-gray-600 text-sm">
-                      Submitted on {new Date(request.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(request.status)}`}>
-                    {request.status}
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => setSelectedRequest(request)}
-                  className="text-blue-600 hover:underline"
+            {requests.map((request, index) => {
+              const typeInfo = getRequestTypeInfo(request.requestType);
+              return (
+                <div
+                  key={request.id}
+                  className={`stat-card animate-slide-up stagger-${Math.min(index + 1, 6)}`}
                 >
-                  View Details & Take Action
-                </button>
-              </div>
-            ))}
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
+                    <div className="flex items-center">
+                      <span className="text-2xl mr-3">{typeInfo.icon}</span>
+                      <div>
+                        <h2 className="text-xl font-bold text-aqua-800">{typeInfo.label}</h2>
+                        <p className="text-gray-500 text-sm">
+                          Submitted on {new Date(request.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`px-4 py-1.5 rounded-full text-sm font-semibold border ${getStatusStyles(request.status)}`}>
+                      {request.status}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedRequest(request)}
+                    className="aqua-link inline-flex items-center group"
+                  >
+                    View Details & Take Action
+                    <svg className="w-4 h-4 ml-2 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
 
+        {/* Modal */}
         {selectedRequest && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
-              <h2 className="text-2xl font-bold mb-4">{getRequestTypeLabel(selectedRequest.requestType)} Request</h2>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+            <div className="glass-card p-8 max-w-md w-full max-h-[90vh] overflow-y-auto animate-scale-in">
+              <div className="flex items-center mb-6">
+                <span className="text-3xl mr-3">{getRequestTypeInfo(selectedRequest.requestType).icon}</span>
+                <h2 className="text-2xl font-bold text-aqua-800">
+                  {getRequestTypeInfo(selectedRequest.requestType).label}
+                </h2>
+              </div>
 
               <div className="space-y-3 mb-6">
-                <p>
-                  <span className="font-semibold">Status:</span> {selectedRequest.status}
-                </p>
-                <p>
-                  <span className="font-semibold">Submitted:</span>{' '}
-                  {new Date(selectedRequest.createdAt).toLocaleDateString()}
-                </p>
+                <InfoRow label="Status" value={selectedRequest.status} highlight />
+                <InfoRow label="Submitted" value={new Date(selectedRequest.createdAt).toLocaleDateString()} />
 
                 {isLeaveRequest(selectedRequest) && (
                   <>
-                    <p>
-                      <span className="font-semibold">From:</span>{' '}
-                      {new Date(selectedRequest.startDate).toLocaleDateString()}
-                    </p>
-                    <p>
-                      <span className="font-semibold">To:</span>{' '}
-                      {new Date(selectedRequest.endDate).toLocaleDateString()}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Duration:</span> {selectedRequest.duration} days
-                    </p>
-                    <p>
-                      <span className="font-semibold">Reason:</span> {selectedRequest.reason}
-                    </p>
+                    <InfoRow label="From" value={new Date(selectedRequest.startDate).toLocaleDateString()} />
+                    <InfoRow label="To" value={new Date(selectedRequest.endDate).toLocaleDateString()} />
+                    <InfoRow label="Duration" value={`${selectedRequest.duration} days`} />
+                    <InfoRow label="Reason" value={selectedRequest.reason} />
                     {selectedRequest.parentContact && (
-                      <p>
-                        <span className="font-semibold">Parent Contact:</span> {selectedRequest.parentContact}
-                      </p>
+                      <InfoRow label="Parent Contact" value={selectedRequest.parentContact} />
                     )}
                   </>
                 )}
 
                 {isCleaningRequest(selectedRequest) && (
                   <>
-                    <p>
-                      <span className="font-semibold">Room:</span> {selectedRequest.roomNumber}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Floor:</span> {selectedRequest.floor}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Type:</span> {selectedRequest.cleaningType}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Priority:</span> {selectedRequest.priority}
-                    </p>
-                    {selectedRequest.notes && (
-                      <p>
-                        <span className="font-semibold">Notes:</span> {selectedRequest.notes}
-                      </p>
-                    )}
+                    <InfoRow label="Room" value={selectedRequest.roomNumber} />
+                    <InfoRow label="Floor" value={selectedRequest.floor} />
+                    <InfoRow label="Type" value={selectedRequest.cleaningType} />
+                    <InfoRow label="Priority" value={selectedRequest.priority} />
+                    {selectedRequest.notes && <InfoRow label="Notes" value={selectedRequest.notes} />}
                   </>
                 )}
 
                 {isMessOffRequest(selectedRequest) && (
                   <>
-                    <p>
-                      <span className="font-semibold">From:</span>{' '}
-                      {new Date(selectedRequest.startDate).toLocaleDateString()}
-                    </p>
-                    <p>
-                      <span className="font-semibold">To:</span>{' '}
-                      {new Date(selectedRequest.endDate).toLocaleDateString()}
-                    </p>
-                    {selectedRequest.reason && (
-                      <p>
-                        <span className="font-semibold">Reason:</span> {selectedRequest.reason}
-                      </p>
-                    )}
-                    {selectedRequest.mealCount && (
-                      <p>
-                        <span className="font-semibold">Meal Count:</span> {selectedRequest.mealCount}
-                      </p>
-                    )}
-                    {selectedRequest.refundAmount && (
-                      <p>
-                        <span className="font-semibold">Refund Amount:</span> Rs. {selectedRequest.refundAmount}
-                      </p>
-                    )}
+                    <InfoRow label="From" value={new Date(selectedRequest.startDate).toLocaleDateString()} />
+                    <InfoRow label="To" value={new Date(selectedRequest.endDate).toLocaleDateString()} />
+                    {selectedRequest.reason && <InfoRow label="Reason" value={selectedRequest.reason} />}
+                    {selectedRequest.mealCount && <InfoRow label="Meal Count" value={String(selectedRequest.mealCount)} />}
+                    {selectedRequest.refundAmount && <InfoRow label="Refund" value={`Rs. ${selectedRequest.refundAmount}`} />}
                   </>
                 )}
               </div>
@@ -248,23 +220,25 @@ export default function ManagerRequestsPage() {
                   <button
                     onClick={() => handleApprove(selectedRequest.id)}
                     disabled={actionLoading}
-                    className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400"
+                    className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 font-semibold text-white shadow-md
+                               transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:transform-none"
                   >
-                    Approve
+                    ✓ Approve
                   </button>
                   <button
                     onClick={() => handleReject(selectedRequest.id)}
                     disabled={actionLoading}
-                    className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 disabled:bg-gray-400"
+                    className="flex-1 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 py-3 font-semibold text-white shadow-md
+                               transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:transform-none"
                   >
-                    Reject
+                    ✗ Reject
                   </button>
                 </div>
               )}
 
               <button
                 onClick={() => setSelectedRequest(null)}
-                className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600"
+                className="w-full btn-secondary"
               >
                 Close
               </button>
@@ -273,5 +247,16 @@ export default function ManagerRequestsPage() {
         )}
       </div>
     </ProtectedRoute>
+  );
+}
+
+function InfoRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className={`flex justify-between items-center py-2 ${highlight ? '' : 'border-b border-gray-100'}`}>
+      <span className="text-gray-500 font-medium">{label}:</span>
+      <span className={`font-semibold ${highlight ? 'px-3 py-1 rounded-full bg-aqua-100 text-aqua-700' : 'text-gray-800'}`}>
+        {value}
+      </span>
+    </div>
   );
 }

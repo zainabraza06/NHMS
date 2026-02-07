@@ -10,11 +10,13 @@ export const getHosteliteDashboard = asyncHandler(async (req, res) => {
     .populate('requests');
 
   if (!hostelite) {
-    return res.status(404).json({ message: 'Hostelite not found' });
+    return res.status(404).json({ success: false, message: 'Hostelite not found' });
   }
 
   res.json({
-    hostelite: {
+    success: true,
+    message: 'Dashboard data retrieved successfully',
+    data: {
       _id: hostelite._id,
       firstName: hostelite.firstName,
       lastName: hostelite.lastName,
@@ -39,10 +41,14 @@ export const getHosteliteRequests = asyncHandler(async (req, res) => {
     });
 
   if (!hostelite) {
-    return res.status(404).json({ message: 'Hostelite not found' });
+    return res.status(404).json({ success: false, message: 'Hostelite not found' });
   }
 
-  res.json({ requests: hostelite.requests || [] });
+  res.json({ 
+    success: true,
+    message: 'Requests retrieved successfully',
+    data: hostelite.requests || [] 
+  });
 });
 
 export const getHosteliteProfile = asyncHandler(async (req, res) => {
@@ -51,10 +57,14 @@ export const getHosteliteProfile = asyncHandler(async (req, res) => {
   const hostelite = await Hostelite.findById(userId).populate('hostel');
 
   if (!hostelite) {
-    return res.status(404).json({ message: 'Hostelite not found' });
+    return res.status(404).json({ success: false, message: 'Hostelite not found' });
   }
 
-  res.json({ hostelite });
+  res.json({ 
+    success: true,
+    message: 'Profile retrieved successfully',
+    data: hostelite 
+  });
 });
 
 export const updateHosteliteProfile = asyncHandler(async (req, res) => {
@@ -72,10 +82,14 @@ export const updateHosteliteProfile = asyncHandler(async (req, res) => {
   );
 
   if (!hostelite) {
-    return res.status(404).json({ message: 'Hostelite not found' });
+    return res.status(404).json({ success: false, message: 'Hostelite not found' });
   }
 
-  res.json({ message: 'Profile updated successfully', hostelite });
+  res.json({ 
+    success: true,
+    message: 'Profile updated successfully', 
+    data: hostelite 
+  });
 });
 
 export const getAllHostelites = asyncHandler(async (req, res) => {
@@ -97,7 +111,9 @@ export const getAllHostelites = asyncHandler(async (req, res) => {
   const total = await Hostelite.countDocuments(filter);
 
   res.json({
-    hostelites,
+    success: true,
+    message: 'Hostelites retrieved successfully',
+    data: hostelites,
     pagination: {
       total,
       page: parseInt(page),

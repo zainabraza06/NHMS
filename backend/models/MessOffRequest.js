@@ -12,7 +12,12 @@ const MessOffRequestSchema = new mongoose.Schema({
   },
   reason: String,
   refundAmount: Number,
-  mealCount: Number
+  mealCount: Number,
+  approvedDaysPerMonth: {
+    type: Map,
+    of: Number,
+    default: {} // e.g., { "02-2026": 5, "03-2026": 2 }
+  }
 });
 
 const MessOffRequest = Request.discriminator('MESS_OFF_REQUEST', MessOffRequestSchema);

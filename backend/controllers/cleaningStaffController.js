@@ -10,7 +10,7 @@ export const getCleaningStaffDashboard = asyncHandler(async (req, res) => {
     .populate('cleaningRequests');
 
   if (!staff) {
-    return res.status(404).json({ message: 'Staff not found' });
+    return res.status(404).json({ success: false, message: 'Staff not found' });
   }
 
   const pendingRequests = await CleaningRequest.find({
@@ -24,7 +24,9 @@ export const getCleaningStaffDashboard = asyncHandler(async (req, res) => {
   });
 
   res.json({
-    staff: {
+    success: true,
+    message: 'Dashboard data retrieved successfully',
+    data: {
       _id: staff._id,
       firstName: staff.firstName,
       lastName: staff.lastName,
@@ -56,7 +58,9 @@ export const getAssignedRequests = asyncHandler(async (req, res) => {
   const total = await CleaningRequest.countDocuments(filter);
 
   res.json({
-    requests,
+    success: true,
+    message: 'Assigned requests retrieved successfully',
+    data: requests,
     pagination: {
       total,
       page: parseInt(page),
@@ -81,10 +85,14 @@ export const updateRequestStatus = asyncHandler(async (req, res) => {
   ).populate('hostelite');
 
   if (!request) {
-    return res.status(404).json({ message: 'Request not found' });
+    return res.status(404).json({ success: false, message: 'Request not found' });
   }
 
-  res.json({ message: 'Request updated successfully', request });
+  res.json({ 
+    success: true,
+    message: 'Request updated successfully', 
+    data: request 
+  });
 });
 
 export const getCleaningStaffProfile = asyncHandler(async (req, res) => {
@@ -94,10 +102,14 @@ export const getCleaningStaffProfile = asyncHandler(async (req, res) => {
     .populate('assignedHostels');
 
   if (!staff) {
-    return res.status(404).json({ message: 'Staff not found' });
+    return res.status(404).json({ success: false, message: 'Staff not found' });
   }
 
-  res.json({ staff });
+  res.json({ 
+    success: true,
+    message: 'Profile retrieved successfully',
+    data: staff 
+  });
 });
 
 export const updateCleaningStaffProfile = asyncHandler(async (req, res) => {
@@ -116,8 +128,12 @@ export const updateCleaningStaffProfile = asyncHandler(async (req, res) => {
   );
 
   if (!staff) {
-    return res.status(404).json({ message: 'Staff not found' });
+    return res.status(404).json({ success: false, message: 'Staff not found' });
   }
 
-  res.json({ message: 'Profile updated successfully', staff });
+  res.json({ 
+    success: true,
+    message: 'Profile updated successfully', 
+    data: staff 
+  });
 });

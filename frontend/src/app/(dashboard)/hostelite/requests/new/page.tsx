@@ -102,277 +102,262 @@ export default function NewRequestPage() {
     }
   };
 
+  const requestTypes = [
+    { value: 'leave', label: 'Leave Request', icon: '🏠', description: 'Request time off from hostel' },
+    { value: 'cleaning', label: 'Cleaning Request', icon: '🧹', description: 'Request room cleaning service' },
+    { value: 'messOff', label: 'Mess-Off Request', icon: '🍽️', description: 'Opt out of mess meals' },
+  ];
+
   return (
     <ProtectedRoute allowedRoles={[USER_ROLES.HOSTELITE]}>
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8">Submit New Request</h1>
+      <div className="page-container max-w-2xl">
+        <h1 className="section-header">Submit New Request</h1>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="alert-error mb-6">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4">
+          <div className="alert-success mb-6">
             {success}
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="stat-card animate-scale-in">
+          {/* Request Type Selector */}
           <div className="mb-8">
-            <label className="block text-sm font-medium mb-2">Request Type</label>
-            <div className="space-y-2">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="leave"
-                  checked={requestType === 'leave'}
-                  onChange={(e) => setRequestType(e.target.value)}
-                  className="mr-2"
-                />
-                Leave Request
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="cleaning"
-                  checked={requestType === 'cleaning'}
-                  onChange={(e) => setRequestType(e.target.value)}
-                  className="mr-2"
-                />
-                Cleaning Request
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="messOff"
-                  checked={requestType === 'messOff'}
-                  onChange={(e) => setRequestType(e.target.value)}
-                  className="mr-2"
-                />
-                Mess-Off Request
-              </label>
+            <label className="block text-sm font-semibold mb-4 text-gray-700">Select Request Type</label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {requestTypes.map((type) => (
+                <button
+                  key={type.value}
+                  type="button"
+                  onClick={() => setRequestType(type.value)}
+                  className={`p-4 rounded-xl border-2 text-left transition-all duration-300 
+                    ${requestType === type.value
+                      ? 'border-aqua-500 bg-aqua-50 shadow-aqua'
+                      : 'border-gray-200 hover:border-aqua-300 hover:bg-aqua-50/50'
+                    }`}
+                >
+                  <span className="text-2xl block mb-2">{type.icon}</span>
+                  <span className={`font-semibold block ${requestType === type.value ? 'text-aqua-700' : 'text-gray-700'}`}>
+                    {type.label}
+                  </span>
+                  <span className="text-xs text-gray-500">{type.description}</span>
+                </button>
+              ))}
             </div>
           </div>
 
+          {/* Leave Request Form */}
           {requestType === 'leave' && (
-            <form onSubmit={handleLeaveSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="startDate" className="block text-sm font-medium mb-1">
-                  Start Date
-                </label>
-                <input
-                  id="startDate"
-                  type="date"
-                  value={leaveForm.startDate}
-                  onChange={(e) =>
-                    setLeaveForm({ ...leaveForm, startDate: e.target.value })
-                  }
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
+            <form onSubmit={handleLeaveSubmit} className="space-y-5 animate-fade-in">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="startDate" className="block text-sm font-semibold mb-2 text-gray-700">
+                    Start Date
+                  </label>
+                  <input
+                    id="startDate"
+                    type="date"
+                    value={leaveForm.startDate}
+                    onChange={(e) => setLeaveForm({ ...leaveForm, startDate: e.target.value })}
+                    required
+                    className="aqua-input"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="endDate" className="block text-sm font-semibold mb-2 text-gray-700">
+                    End Date
+                  </label>
+                  <input
+                    id="endDate"
+                    type="date"
+                    value={leaveForm.endDate}
+                    onChange={(e) => setLeaveForm({ ...leaveForm, endDate: e.target.value })}
+                    required
+                    className="aqua-input"
+                  />
+                </div>
               </div>
 
               <div>
-                <label htmlFor="endDate" className="block text-sm font-medium mb-1">
-                  End Date
-                </label>
-                <input
-                  id="endDate"
-                  type="date"
-                  value={leaveForm.endDate}
-                  onChange={(e) =>
-                    setLeaveForm({ ...leaveForm, endDate: e.target.value })
-                  }
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="reason" className="block text-sm font-medium mb-1">
+                <label htmlFor="reason" className="block text-sm font-semibold mb-2 text-gray-700">
                   Reason
                 </label>
                 <textarea
                   id="reason"
                   value={leaveForm.reason}
-                  onChange={(e) =>
-                    setLeaveForm({ ...leaveForm, reason: e.target.value })
-                  }
+                  onChange={(e) => setLeaveForm({ ...leaveForm, reason: e.target.value })}
                   required
                   rows={4}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="aqua-input resize-none"
+                  placeholder="Please provide a reason for your leave..."
                 />
               </div>
 
               <div>
-                <label htmlFor="parentContact" className="block text-sm font-medium mb-1">
+                <label htmlFor="parentContact" className="block text-sm font-semibold mb-2 text-gray-700">
                   Parent Contact Number
                 </label>
                 <input
                   id="parentContact"
                   type="tel"
                   value={leaveForm.parentContact}
-                  onChange={(e) =>
-                    setLeaveForm({ ...leaveForm, parentContact: e.target.value })
-                  }
+                  onChange={(e) => setLeaveForm({ ...leaveForm, parentContact: e.target.value })}
                   required
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="aqua-input"
+                  placeholder="+92 XXX XXXXXXX"
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-primary text-white py-2 rounded-lg font-bold hover:bg-primary-dark disabled:bg-gray-400"
-              >
-                {isLoading ? 'Submitting...' : 'Submit Request'}
+              <button type="submit" disabled={isLoading} className="w-full btn-primary py-3 text-lg">
+                {isLoading ? <LoadingSpinner text="Submitting..." /> : 'Submit Leave Request'}
               </button>
             </form>
           )}
 
+          {/* Cleaning Request Form */}
           {requestType === 'cleaning' && (
-            <form onSubmit={handleCleaningSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="roomNumber" className="block text-sm font-medium mb-1">
-                  Room Number
-                </label>
-                <input
-                  id="roomNumber"
-                  type="text"
-                  value={cleaningForm.roomNumber}
-                  onChange={(e) =>
-                    setCleaningForm({ ...cleaningForm, roomNumber: e.target.value })
-                  }
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
+            <form onSubmit={handleCleaningSubmit} className="space-y-5 animate-fade-in">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="roomNumber" className="block text-sm font-semibold mb-2 text-gray-700">
+                    Room Number
+                  </label>
+                  <input
+                    id="roomNumber"
+                    type="text"
+                    value={cleaningForm.roomNumber}
+                    onChange={(e) => setCleaningForm({ ...cleaningForm, roomNumber: e.target.value })}
+                    required
+                    className="aqua-input"
+                    placeholder="e.g., A-101"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="floor" className="block text-sm font-semibold mb-2 text-gray-700">
+                    Floor Number
+                  </label>
+                  <input
+                    id="floor"
+                    type="text"
+                    value={cleaningForm.floor}
+                    onChange={(e) => setCleaningForm({ ...cleaningForm, floor: e.target.value })}
+                    required
+                    className="aqua-input"
+                    placeholder="e.g., 1"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label htmlFor="floor" className="block text-sm font-medium mb-1">
-                  Floor Number
-                </label>
-                <input
-                  id="floor"
-                  type="text"
-                  value={cleaningForm.floor}
-                  onChange={(e) =>
-                    setCleaningForm({ ...cleaningForm, floor: e.target.value })
-                  }
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="cleaningType" className="block text-sm font-semibold mb-2 text-gray-700">
+                    Cleaning Type
+                  </label>
+                  <select
+                    id="cleaningType"
+                    value={cleaningForm.cleaningType}
+                    onChange={(e) => setCleaningForm({ ...cleaningForm, cleaningType: e.target.value as any })}
+                    className="aqua-input"
+                  >
+                    <option value="ROUTINE">Routine</option>
+                    <option value="DEEP_CLEANING">Deep Cleaning</option>
+                    <option value="EMERGENCY">Emergency</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="priority" className="block text-sm font-semibold mb-2 text-gray-700">
+                    Priority
+                  </label>
+                  <select
+                    id="priority"
+                    value={cleaningForm.priority}
+                    onChange={(e) => setCleaningForm({ ...cleaningForm, priority: e.target.value as any })}
+                    className="aqua-input"
+                  >
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label htmlFor="cleaningType" className="block text-sm font-medium mb-1">
-                  Cleaning Type
-                </label>
-                <select
-                  id="cleaningType"
-                  value={cleaningForm.cleaningType}
-                  onChange={(e) =>
-                    setCleaningForm({ ...cleaningForm, cleaningType: e.target.value as any })
-                  }
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="ROUTINE">Routine</option>
-                  <option value="DEEP_CLEANING">Deep Cleaning</option>
-                  <option value="EMERGENCY">Emergency</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="priority" className="block text-sm font-medium mb-1">
-                  Priority
-                </label>
-                <select
-                  id="priority"
-                  value={cleaningForm.priority}
-                  onChange={(e) =>
-                    setCleaningForm({ ...cleaningForm, priority: e.target.value as any })
-                  }
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <option value="LOW">Low</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HIGH">High</option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-primary text-white py-2 rounded-lg font-bold hover:bg-primary-dark disabled:bg-gray-400"
-              >
-                {isLoading ? 'Submitting...' : 'Submit Request'}
+              <button type="submit" disabled={isLoading} className="w-full btn-primary py-3 text-lg">
+                {isLoading ? <LoadingSpinner text="Submitting..." /> : 'Submit Cleaning Request'}
               </button>
             </form>
           )}
 
+          {/* Mess-Off Request Form */}
           {requestType === 'messOff' && (
-            <form onSubmit={handleMessOffSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="startDate" className="block text-sm font-medium mb-1">
-                  Start Date
-                </label>
-                <input
-                  id="startDate"
-                  type="date"
-                  value={messOffForm.startDate}
-                  onChange={(e) =>
-                    setMessOffForm({ ...messOffForm, startDate: e.target.value })
-                  }
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
+            <form onSubmit={handleMessOffSubmit} className="space-y-5 animate-fade-in">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="startDate" className="block text-sm font-semibold mb-2 text-gray-700">
+                    Start Date
+                  </label>
+                  <input
+                    id="startDate"
+                    type="date"
+                    value={messOffForm.startDate}
+                    onChange={(e) => setMessOffForm({ ...messOffForm, startDate: e.target.value })}
+                    required
+                    className="aqua-input"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="endDate" className="block text-sm font-semibold mb-2 text-gray-700">
+                    End Date
+                  </label>
+                  <input
+                    id="endDate"
+                    type="date"
+                    value={messOffForm.endDate}
+                    onChange={(e) => setMessOffForm({ ...messOffForm, endDate: e.target.value })}
+                    required
+                    className="aqua-input"
+                  />
+                </div>
               </div>
 
               <div>
-                <label htmlFor="endDate" className="block text-sm font-medium mb-1">
-                  End Date
-                </label>
-                <input
-                  id="endDate"
-                  type="date"
-                  value={messOffForm.endDate}
-                  onChange={(e) =>
-                    setMessOffForm({ ...messOffForm, endDate: e.target.value })
-                  }
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="reason" className="block text-sm font-medium mb-1">
+                <label htmlFor="reason" className="block text-sm font-semibold mb-2 text-gray-700">
                   Reason
                 </label>
                 <textarea
                   id="reason"
                   value={messOffForm.reason}
-                  onChange={(e) =>
-                    setMessOffForm({ ...messOffForm, reason: e.target.value })
-                  }
+                  onChange={(e) => setMessOffForm({ ...messOffForm, reason: e.target.value })}
                   required
                   rows={4}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="aqua-input resize-none"
+                  placeholder="Please provide a reason for mess-off..."
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-primary text-white py-2 rounded-lg font-bold hover:bg-primary-dark disabled:bg-gray-400"
-              >
-                {isLoading ? 'Submitting...' : 'Submit Request'}
+              <button type="submit" disabled={isLoading} className="w-full btn-primary py-3 text-lg">
+                {isLoading ? <LoadingSpinner text="Submitting..." /> : 'Submit Mess-Off Request'}
               </button>
             </form>
           )}
         </div>
       </div>
     </ProtectedRoute>
+  );
+}
+
+function LoadingSpinner({ text }: { text: string }) {
+  return (
+    <span className="flex items-center justify-center">
+      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      {text}
+    </span>
   );
 }

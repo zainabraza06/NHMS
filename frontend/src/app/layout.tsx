@@ -15,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="glass-bg text-white">
+      <body className="glass-bg text-foreground min-h-screen">
         <AuthProvider>
           <Navbar />
           <main className="min-h-screen glass-scope">
