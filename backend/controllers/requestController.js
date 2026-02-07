@@ -2,10 +2,8 @@ import Request from '../models/Request.js';
 import LeaveRequest from '../models/LeaveRequest.js';
 import CleaningRequest from '../models/CleaningRequest.js';
 import MessOffRequest from '../models/MessOffRequest.js';
-import Hostelite from '../models/Hostelite.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { calculateLeaveDuration } from '../utils/validators.js';
-import { sendLeaveRequestNotification } from '../utils/emailService.js';
 
 export const submitLeaveRequest = asyncHandler(async (req, res) => {
   const hosteliteId = req.user.userId;
@@ -54,14 +52,6 @@ export const submitLeaveRequest = asyncHandler(async (req, res) => {
   });
 
   await leaveRequest.save();
-
-  const hostelite = await Hostelite.findById(hosteliteId);
-  await sendLeaveRequestNotification(
-    hostelite.email,
-    `${hostelite.firstName} ${hostelite.lastName}`,
-    startDate,
-    endDate
-  );
 
   res.status(201).json({
     success: true,
