@@ -1,16 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { USER_ROLES } from '@/utils/constants';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, error: authError } = useAuth();
+  const { login, user, isLoading: authLoading, error: authError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      // Redirect based on user role
+      switch (user.role) {
+        case USER_ROLES.HOSTELITE:
+          router.push('/hostelite/dashboard');
+          break;
+        case USER_ROLES.CLEANING_STAFF:
+          router.push('/staff/dashboard');
+          break;
+        case USER_ROLES.HOSTEL_MANAGER:
+          router.push('/manager/dashboard');
+          break;
+        default:
+          router.push('/');
+      }
+    }
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -3,34 +3,68 @@ import Hostelite from '../models/Hostelite.js';
 import MessOffRequest from '../models/MessOffRequest.js';
 import Hostel from '../models/Hostel.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
+import Stripe from 'stripe';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock_key');
 
 // Logic for mess off discount: 580 PKR per day
 const MESS_OFF_DAILY_RATE = 580;
 
 /**
- * Generate challans for all hostelites for a specific month
- * Usually runs at the end of the month or beginning of next
+ * Calculates progressive penalty:
+ * - Current month (if past due date): 1000
+ * - Next calendar month: 2000
+ * - Following calendar month: 3000
+ * ... and so on (+1000 for every month it stays unpaid)
  */
-export const generateMonthlyChallans = asyncHandler(async (req, res) => {
-    const { month } = req.body; // e.g., "02-2026"
+const calculatePenalty = (challanMonth, dueDate, status) => {
+    if (status === 'PAID') return 0;
 
-    if (!month) {
-        return res.status(400).json({ success: false, message: 'Please provide month in MM-YYYY format' });
+    const now = new Date();
+    const [chMonth, chYear] = challanMonth.split('-').map(Number);
+    const challanDate = new Date(chYear, chMonth - 1);
+
+    // Calendar months difference (0 for same month, 1 for next month, etc.)
+    const monthsDiff = (now.getFullYear() - challanDate.getFullYear()) * 12 + (now.getMonth() - challanDate.getMonth());
+
+    // Penalty logic: (sum of 1 to n) * 1000 where n is the number of "late periods"
+    // Period 1 starts once past due date.
+    // Period 2 starts once calendar month rolls over.
+    // Period 3 starts next month rollover, etc.
+
+    let penaltyPeriods = monthsDiff;
+    if (now.getDate() >= dueDate.getDate() || monthsDiff > 0) {
+        penaltyPeriods = monthsDiff + 1;
+    } else {
+        // If it's the current month and due date hasn't passed, 0 penalty
+        return 0;
     }
 
+    if (penaltyPeriods <= 0) return 0;
+
+    // Sum of 1 to n: (n * (n + 1)) / 2
+    const sumToN = (penaltyPeriods * (penaltyPeriods + 1)) / 2;
+    return sumToN * 1000;
+};
+
+/**
+ * Core logic to generate challans for all hostelites for a given month
+ */
+export const generateChallansForMonth = async (month) => {
     const hostelites = await Hostelite.find().populate('hostel');
     const results = { created: 0, skipped: 0, errors: [] };
 
     for (const hostelite of hostelites) {
         try {
-            // 1. Check if challan already exists
             const existing = await Challan.findOne({ hostelite: hostelite._id, month });
             if (existing) {
                 results.skipped++;
                 continue;
             }
 
-            // 2. Calculate mess off discount for this month
             const messOffRequests = await MessOffRequest.find({
                 hostelite: hostelite._id,
                 status: 'APPROVED',
@@ -42,28 +76,17 @@ export const generateMonthlyChallans = asyncHandler(async (req, res) => {
                 totalMessOffDays += req.approvedDaysPerMonth.get(month) || 0;
             });
 
-            // Cap mess-off days at 12 for discount calculation
-            const cappedMessOffDays = Math.min(totalMessOffDays, 12);
-            const messOffDiscount = cappedMessOffDays * MESS_OFF_DAILY_RATE;
+            let cappedMessOffDays = Math.min(totalMessOffDays, 12);
+            const messOffDiscount = cappedMessOffDays > 1 ? cappedMessOffDays * MESS_OFF_DAILY_RATE : 0;
 
-            // 3. Calculate dynamic base mess fee: 580 PKR * days in month
             const [mm, yyyy] = month.split('-').map(Number);
             const daysInMonth = new Date(yyyy, mm, 0).getDate();
             const baseMessFee = daysInMonth * MESS_OFF_DAILY_RATE;
 
-            // 4. Calculate penalty: 1000 PKR for each UNPAID or OVERDUE challan
-            const unpaidChallans = await Challan.countDocuments({
-                hostelite: hostelite._id,
-                status: { $in: ['UNPAID', 'OVERDUE'] }
-            });
-            const penalty = unpaidChallans * 1000;
-
+            const penalty = 0;
             const totalAmount = Math.max(0, baseMessFee - messOffDiscount + penalty);
 
-
-            // 5. Create Challan
-            const dueDate = new Date();
-            dueDate.setDate(dueDate.getDate() + 10); // Due in 10 days
+            const dueDate = new Date(yyyy, mm - 1, 10);
 
             const challan = new Challan({
                 hostelite: hostelite._id,
@@ -82,6 +105,20 @@ export const generateMonthlyChallans = asyncHandler(async (req, res) => {
             results.errors.push({ id: hostelite._id, error: err.message });
         }
     }
+    return results;
+};
+
+/**
+ * API handler to manually trigger challan generation
+ */
+export const generateMonthlyChallans = asyncHandler(async (req, res) => {
+    const { month } = req.body; // e.g., "02-2026"
+
+    if (!month) {
+        return res.status(400).json({ success: false, message: 'Please provide month in MM-YYYY format' });
+    }
+
+    const results = await generateChallansForMonth(month);
 
     res.json({
         success: true,
@@ -101,13 +138,26 @@ export const getMyChallans = asyncHandler(async (req, res) => {
 
     const total = await Challan.countDocuments({ hostelite: hosteliteId });
     const challans = await Challan.find({ hostelite: hosteliteId })
-        .sort({ month: 1 }) // Sorting by month ascending as requested by user
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 
+    // Update penalties dynamically for overdue unpaid challans
+    const updatedChallans = await Promise.all(challans.map(async (challan) => {
+        if (challan.status !== 'PAID') {
+            const newPenalty = calculatePenalty(challan.month, challan.dueDate, challan.status);
+            if (newPenalty !== challan.penalty) {
+                challan.penalty = newPenalty;
+                challan.totalAmount = challan.baseMessFee - challan.messOffDiscount + newPenalty;
+                await challan.save();
+            }
+        }
+        return challan;
+    }));
+
     res.json({
         success: true,
-        data: challans,
+        data: updatedChallans,
         pagination: {
             total,
             page,
@@ -128,17 +178,38 @@ export const createPaymentIntent = asyncHandler(async (req, res) => {
         return res.status(404).json({ success: false, message: 'Challan not found' });
     }
 
-    // Mock Stripe Intent
-    const mockIntent = {
-        id: `pi_mock_${Date.now()}`,
-        client_secret: `secret_mock_${Date.now()}`,
-        amount: challan.totalAmount * 100 // Stripe uses cents
-    };
+    // Refresh penalty before creating payment intent to ensure correct amount
+    if (challan.status !== 'PAID') {
+        const currentPenalty = calculatePenalty(challan.month, challan.dueDate, challan.status);
+        if (currentPenalty !== challan.penalty) {
+            challan.penalty = currentPenalty;
+            challan.totalAmount = challan.baseMessFee - challan.messOffDiscount + currentPenalty;
+            await challan.save();
+        }
+    }
 
-    res.json({
-        success: true,
-        data: mockIntent
-    });
+    try {
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(challan.totalAmount * 100),
+            currency: 'pkr',
+            metadata: {
+                challanId: challan._id.toString(),
+                hosteliteId: req.user.userId
+            },
+            payment_method_types: ['card'],
+        });
+
+        res.json({
+            success: true,
+            data: {
+                id: paymentIntent.id,
+                client_secret: paymentIntent.client_secret,
+                amount: paymentIntent.amount
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 });
 
 /**

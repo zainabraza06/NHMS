@@ -40,6 +40,25 @@ export const submitLeaveRequest = asyncHandler(async (req, res) => {
 
   const duration = calculateLeaveDuration(startDate, endDate);
 
+  // Check for overlapping leave requests
+  const overlappingRequest = await LeaveRequest.findOne({
+    hostelite: hosteliteId,
+    status: { $in: ['PENDING', 'APPROVED'] },
+    $or: [
+      {
+        startDate: { $lte: new Date(endDate) },
+        endDate: { $gte: new Date(startDate) }
+      }
+    ]
+  });
+
+  if (overlappingRequest) {
+    return res.status(400).json({
+      success: false,
+      message: `You already have a ${overlappingRequest.status.toLowerCase()} leave request for this period`
+    });
+  }
+
   const leaveRequest = new LeaveRequest({
     requestType: 'LEAVE_REQUEST',
     hostelite: hosteliteId,
@@ -82,6 +101,20 @@ export const submitCleaningRequest = asyncHandler(async (req, res) => {
     return res.status(400).json({
       success: false,
       message: 'Cleaning requests must be scheduled at least 2 days in advance'
+    });
+  }
+
+  // Check for existing cleaning request on the same day
+  const existingCleaning = await CleaningRequest.findOne({
+    hostelite: hosteliteId,
+    status: { $in: ['PENDING', 'APPROVED'] },
+    preferredDate: new Date(preferredDate)
+  });
+
+  if (existingCleaning) {
+    return res.status(400).json({
+      success: false,
+      message: `You already have a ${existingCleaning.status.toLowerCase()} cleaning request for this date`
     });
   }
 
@@ -130,28 +163,49 @@ export const submitMessOffRequest = asyncHandler(async (req, res) => {
     });
   }
 
-  // 2. Duration validation: > 1 day
-  const diffTime = end - start;
-  const diffDaysTotal = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  // 2. Duration validation: >= 2 days (inclusive)
+  const diffTime = Math.abs(end - start);
+  const inclusiveDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-  if (diffDaysTotal <= 1) {
+  if (inclusiveDays < 2) {
     return res.status(400).json({
       success: false,
-      message: 'Mess off request duration must be greater than 1 day'
+      message: 'Mess off request duration must be at least 2 days'
     });
   }
 
-  // 3. Monthly cap logic (12 days max)
-  // Split dates by month
+  // Check for overlapping mess-off requests
+  const overlappingMessOff = await MessOffRequest.findOne({
+    hostelite: hosteliteId,
+    status: { $in: ['PENDING', 'APPROVED'] },
+    $or: [
+      {
+        startDate: { $lte: new Date(endDate) },
+        endDate: { $gte: new Date(startDate) }
+      }
+    ]
+  });
+
+  if (overlappingMessOff) {
+    return res.status(400).json({
+      success: false,
+      message: `You already have a ${overlappingMessOff.status.toLowerCase()} mess-off request for this period`
+    });
+  }
+
+  // 3. Calculation Logic: 1st day is NOT counted
+  // Split dates by month, STARTING FROM THE SECOND DAY
   const daysByMonth = {};
   let temp = new Date(start);
+  temp.setDate(temp.getDate() + 1); // Skip the first day of the request
+
   while (temp <= end) {
     const monthKey = `${(temp.getMonth() + 1).toString().padStart(2, '0')}-${temp.getFullYear()}`;
     daysByMonth[monthKey] = (daysByMonth[monthKey] || 0) + 1;
     temp.setDate(temp.getDate() + 1);
   }
 
-  // Check current availed days for each month
+  // 4. Monthly cap logic (12 days max per month)
   const approvedDaysPerMonth = {};
   const errorMessages = [];
 

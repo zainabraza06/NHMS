@@ -25,34 +25,32 @@ const seedChallans = async () => {
             {
                 hostelite: hostelite._id,
                 month: '12-2025',
-                baseMessFee: 15000,
-                messOffDiscount: 1160, // 2 days
-                penalty: 0,
-                totalAmount: 13840,
-                status: 'PAID',
-                dueDate: new Date('2025-12-10'),
-                paidAt: new Date('2025-12-08'),
-                stripePaymentIntentId: 'pi_mock_123456789'
+                baseMessFee: 17980, // 31 * 580
+                messOffDiscount: 0,
+                penalty: 6000,
+                totalAmount: 23980,
+                status: 'UNPAID',
+                dueDate: new Date('2025-12-10')
             },
             {
                 hostelite: hostelite._id,
                 month: '01-2026',
-                baseMessFee: 15000,
+                baseMessFee: 17980, // 31 * 580
                 messOffDiscount: 0,
-                penalty: 0,
-                totalAmount: 15000,
+                penalty: 3000,
+                totalAmount: 20980,
                 status: 'UNPAID',
                 dueDate: new Date('2026-01-10')
             },
             {
                 hostelite: hostelite._id,
                 month: '02-2026',
-                baseMessFee: 15000,
-                messOffDiscount: 580, // 1 day
-                penalty: 1000, // Penalty because 01-2026 is UNPAID
-                totalAmount: 15420,
+                baseMessFee: 16240, // 28 * 580
+                messOffDiscount: 0,
+                penalty: 0,
+                totalAmount: 16240,
                 status: 'UNPAID',
-                dueDate: new Date('2026-02-17')
+                dueDate: new Date('2026-02-10')
             }
         ];
 

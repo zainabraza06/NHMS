@@ -67,7 +67,8 @@ export default function NewRequestPage() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
-      setError('Error submitting request');
+      const message = (err as any).response?.data?.message || 'Error submitting request';
+      setError(message);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsLoading(false);
@@ -98,7 +99,8 @@ export default function NewRequestPage() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
-      setError('Error submitting request');
+      const message = (err as any).response?.data?.message || 'Error submitting request';
+      setError(message);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsLoading(false);
@@ -128,7 +130,8 @@ export default function NewRequestPage() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
-      setError('Error submitting request');
+      const message = (err as any).response?.data?.message || 'Error submitting request';
+      setError(message);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsLoading(false);

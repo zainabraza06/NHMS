@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
+import { API_ENDPOINTS } from './constants';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -31,7 +32,7 @@ class ApiClient {
     this.client.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
-        if (error.response?.status === 401) {
+        if (error.response?.status === 401 && error.config?.url !== API_ENDPOINTS.AUTH_LOGIN) {
           // Clear token and redirect to login
           if (typeof window !== 'undefined') {
             localStorage.removeItem('token');
