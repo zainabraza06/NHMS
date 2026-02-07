@@ -37,9 +37,10 @@ export default function NewRequestPage() {
     reason: '',
   });
 
-  const minAdvanceDate = getMinDate(1);
+  const minAdvanceDate = getMinDate(2);
   const leaveValidation = validateLeaveDates(leaveForm.startDate, leaveForm.endDate);
   const cleaningValidation = validateCleaningDate(cleaningForm.preferredDate);
+  const messOffValidation = validateMessOffDates(messOffForm.startDate, messOffForm.endDate);
 
   const handleLeaveSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,6 +109,12 @@ export default function NewRequestPage() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
+
+    if (!messOffValidation.isValid) {
+      setIsLoading(false);
+      setError(messOffValidation.message);
+      return;
+    }
 
     try {
       const response = await requestService.submitMessOffRequest(messOffForm);
@@ -212,7 +219,7 @@ export default function NewRequestPage() {
               </div>
 
               <p className="text-xs text-gray-500">
-                Leave must be scheduled at least 1 day in advance. End date must be on or after the start date.
+                Leave must be scheduled at least 2 days in advance. End date must be on or after the start date.
               </p>
 
               {!leaveValidation.isValid && (
@@ -280,7 +287,7 @@ export default function NewRequestPage() {
               </div>
 
               <p className="text-xs text-gray-500">
-                Cleaning must be scheduled at least 1 day in advance.
+                Cleaning must be scheduled at least 2 days in advance.
               </p>
 
               {!cleaningValidation.isValid && (
@@ -376,6 +383,7 @@ export default function NewRequestPage() {
                     value={messOffForm.startDate}
                     onChange={(e) => setMessOffForm({ ...messOffForm, startDate: e.target.value })}
                     required
+                    min={minAdvanceDate}
                     className="aqua-input"
                   />
                 </div>
@@ -389,10 +397,21 @@ export default function NewRequestPage() {
                     value={messOffForm.endDate}
                     onChange={(e) => setMessOffForm({ ...messOffForm, endDate: e.target.value })}
                     required
+                    min={messOffForm.startDate || minAdvanceDate}
                     className="aqua-input"
                   />
                 </div>
               </div>
+
+              <p className="text-xs text-gray-500">
+                Mess-off must be applied at least 2 days in advance, for more than 1 day, and is capped at 12 days per month.
+              </p>
+
+              {!messOffValidation.isValid && (
+                <p className="text-xs text-rose-600">
+                  {messOffValidation.message}
+                </p>
+              )}
 
               <div>
                 <label htmlFor="reason" className="block text-sm font-semibold mb-2 text-gray-700">
@@ -409,7 +428,11 @@ export default function NewRequestPage() {
                 />
               </div>
 
-              <button type="submit" disabled={isLoading} className="w-full btn-primary py-3 text-lg">
+              <button
+                type="submit"
+                disabled={isLoading || !messOffValidation.isValid}
+                className="w-full btn-primary py-3 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
+              >
                 {isLoading ? <LoadingSpinner text="Submitting..." /> : 'Submit Mess-Off Request'}
               </button>
             </form>
@@ -450,12 +473,12 @@ function validateLeaveDates(startDate: string, endDate: string) {
     return { isValid: false, message: 'Please provide valid start and end dates' };
   }
 
-  const oneDayFromNow = new Date();
-  oneDayFromNow.setDate(oneDayFromNow.getDate() + 1);
-  oneDayFromNow.setHours(0, 0, 0, 0);
+  const twoDaysFromNow = new Date();
+  twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+  twoDaysFromNow.setHours(0, 0, 0, 0);
 
-  if (start < oneDayFromNow) {
-    return { isValid: false, message: 'Leave requests must be applied at least 1 day in advance' };
+  if (start < twoDaysFromNow) {
+    return { isValid: false, message: 'Leave requests must be applied at least 2 days in advance' };
   }
 
   if (end < start) {
@@ -475,12 +498,38 @@ function validateCleaningDate(preferredDate: string) {
     return { isValid: false, message: 'Please select a valid preferred date' };
   }
 
-  const oneDayFromNow = new Date();
-  oneDayFromNow.setDate(oneDayFromNow.getDate() + 1);
-  oneDayFromNow.setHours(0, 0, 0, 0);
+  const twoDaysFromNow = new Date();
+  twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+  twoDaysFromNow.setHours(0, 0, 0, 0);
 
-  if (preferred < oneDayFromNow) {
-    return { isValid: false, message: 'Cleaning requests must be scheduled at least 1 day in advance' };
+  if (preferred < twoDaysFromNow) {
+    return { isValid: false, message: 'Cleaning requests must be scheduled at least 2 days in advance' };
+  }
+
+  return { isValid: true, message: '' };
+}
+
+function validateMessOffDates(startDate: string, endDate: string) {
+  if (!startDate || !endDate) {
+    return { isValid: false, message: 'Please provide start and end dates' };
+  }
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return { isValid: false, message: 'Please provide valid start and end dates' };
+  }
+
+  const twoDaysFromNow = new Date();
+  twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+  twoDaysFromNow.setHours(0, 0, 0, 0);
+
+  if (start < twoDaysFromNow) {
+    return { isValid: false, message: 'Mess-off requests must be applied at least 2 days in advance' };
+  }
+
+  if (end <= start) {
+    return { isValid: false, message: 'Mess-off duration must be more than 1 day' };
   }
 
   return { isValid: true, message: '' };

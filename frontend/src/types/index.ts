@@ -101,6 +101,23 @@ export interface MessOffRequest extends BaseRequest {
   mealCount?: number;
 }
 
+// Billing Types
+export interface Challan {
+  _id: string;
+  hostelite: string | Hostelite;
+  month: string;
+  baseMessFee: number;
+  messOffDiscount: number;
+  penalty: number;
+  totalAmount: number;
+  status: 'UNPAID' | 'PAID' | 'OVERDUE';
+  dueDate: string;
+  stripePaymentIntentId?: string;
+  paidAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type Request = LeaveRequest | CleaningRequest | MessOffRequest;
 
 // Auth Types

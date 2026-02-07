@@ -1,0 +1,129 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Challan } from '@/types';
+import { billingService } from '@/services/billingService';
+import { ChallanCard } from './ChallanCard';
+import Link from 'next/link';
+
+interface ChallanListProps {
+    limit?: number;
+    showViewAll?: boolean;
+    isPaginated?: boolean;
+}
+
+export function ChallanList({ limit, showViewAll = false, isPaginated = false }: ChallanListProps) {
+    const [challans, setChallans] = useState<Challan[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    const fetchChallans = async (page: number) => {
+        try {
+            setIsLoading(true);
+            const res = await billingService.getMyChallans(page, limit || 10);
+            if (res.success && res.data) {
+                // Sort by date ascending (MM-YYYY format)
+                // Note: Backend also sorts now, but this ensures consistency
+                const sorted = [...res.data].sort((a, b) => {
+                    const [monthA, yearA] = a.month.split('-').map(Number);
+                    const [monthB, yearB] = b.month.split('-').map(Number);
+                    if (yearA !== yearB) return yearA - yearB;
+                    return monthA - monthB;
+                });
+                setChallans(sorted);
+                if (res.pagination) {
+                    setTotalPages(res.pagination.pages);
+                    setCurrentPage(res.pagination.page);
+                }
+            } else {
+                setError(res.message || 'Failed to fetch bills');
+            }
+        } catch (err) {
+            setError('An error occurred while fetching bills');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchChallans(1);
+    }, []);
+
+    if (isLoading && challans.length === 0) {
+        return (
+            <div className="flex justify-center py-12">
+                <div className="spinner"></div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between mb-2">
+                <h2 className="text-2xl font-bold text-aqua-800 flex items-center gap-3">
+                    <span className="text-3xl">🧾</span> Monthly Bills
+                </h2>
+                <div className="flex items-center gap-4">
+                    <span className="px-3 py-1 bg-aqua-100 text-aqua-700 rounded-lg text-sm font-semibold">
+                        {challans.length} {challans.length === 1 ? 'Challan' : 'Challans'}
+                    </span>
+                    {showViewAll && (
+                        <Link
+                            href="/hostelite/bills"
+                            className="text-aqua-600 hover:text-aqua-700 text-sm font-bold flex items-center gap-1 group transition-all"
+                        >
+                            View All <span className="group-hover:translate-x-1 transition-transform">→</span>
+                        </Link>
+                    )}
+                </div>
+            </div>
+
+            {error ? (
+                <div className="alert-error p-4 rounded-xl border-rose-200 bg-rose-50 text-rose-700">
+                    {error}
+                </div>
+            ) : challans.length === 0 ? (
+                <div className="text-center py-12 px-6 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/50">
+                    <span className="text-5xl block mb-4">📜</span>
+                    <p className="text-gray-500 font-medium">No bills found for your account yet.</p>
+                </div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {challans.map((challan) => (
+                            <ChallanCard
+                                key={challan._id}
+                                challan={challan}
+                                onPaymentSuccess={() => fetchChallans(currentPage)}
+                            />
+                        ))}
+                    </div>
+
+                    {isPaginated && totalPages > 1 && (
+                        <div className="flex justify-center items-center gap-4 mt-8">
+                            <button
+                                onClick={() => fetchChallans(currentPage - 1)}
+                                disabled={currentPage === 1 || isLoading}
+                                className="px-4 py-2 rounded-xl border border-aqua-200 text-aqua-700 disabled:opacity-50 hover:bg-aqua-50 transition-colors"
+                            >
+                                Previous
+                            </button>
+                            <span className="text-sm font-medium text-gray-500">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <button
+                                onClick={() => fetchChallans(currentPage + 1)}
+                                disabled={currentPage === totalPages || isLoading}
+                                className="px-4 py-2 rounded-xl border border-aqua-200 text-aqua-700 disabled:opacity-50 hover:bg-aqua-50 transition-colors"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+}

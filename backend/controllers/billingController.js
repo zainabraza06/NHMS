@@ -42,16 +42,24 @@ export const generateMonthlyChallans = asyncHandler(async (req, res) => {
                 totalMessOffDays += req.approvedDaysPerMonth.get(month) || 0;
             });
 
-            const messOffDiscount = totalMessOffDays * MESS_OFF_DAILY_RATE;
+            // Cap mess-off days at 12 for discount calculation
+            const cappedMessOffDays = Math.min(totalMessOffDays, 12);
+            const messOffDiscount = cappedMessOffDays * MESS_OFF_DAILY_RATE;
 
-            // 3. Get base mess charges from hostel
-            const baseMessFee = hostelite.hostel?.messCharges || 15000; // Default if not set
+            // 3. Calculate dynamic base mess fee: 580 PKR * days in month
+            const [mm, yyyy] = month.split('-').map(Number);
+            const daysInMonth = new Date(yyyy, mm, 0).getDate();
+            const baseMessFee = daysInMonth * MESS_OFF_DAILY_RATE;
 
-            // 4. Calculate penalty (mock logic: check if previous month was paid)
-            let penalty = 0;
-            // ... potential penalty logic here
+            // 4. Calculate penalty: 1000 PKR for each UNPAID or OVERDUE challan
+            const unpaidChallans = await Challan.countDocuments({
+                hostelite: hostelite._id,
+                status: { $in: ['UNPAID', 'OVERDUE'] }
+            });
+            const penalty = unpaidChallans * 1000;
 
             const totalAmount = Math.max(0, baseMessFee - messOffDiscount + penalty);
+
 
             // 5. Create Challan
             const dueDate = new Date();
@@ -87,11 +95,25 @@ export const generateMonthlyChallans = asyncHandler(async (req, res) => {
  */
 export const getMyChallans = asyncHandler(async (req, res) => {
     const hosteliteId = req.user.userId;
-    const challans = await Challan.find({ hostelite: hosteliteId }).sort({ createdAt: -1 });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const total = await Challan.countDocuments({ hostelite: hosteliteId });
+    const challans = await Challan.find({ hostelite: hosteliteId })
+        .sort({ month: 1 }) // Sorting by month ascending as requested by user
+        .skip(skip)
+        .limit(limit);
 
     res.json({
         success: true,
-        data: challans
+        data: challans,
+        pagination: {
+            total,
+            page,
+            limit,
+            pages: Math.ceil(total / limit)
+        }
     });
 });
 

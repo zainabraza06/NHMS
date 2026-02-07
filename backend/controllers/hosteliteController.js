@@ -1,5 +1,5 @@
 import Hostelite from '../models/Hostelite.js';
-import Hostel from '../models/Hostel.js';
+import Request from '../models/Request.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 
 export const getHosteliteDashboard = asyncHandler(async (req, res) => {
@@ -12,6 +12,11 @@ export const getHosteliteDashboard = asyncHandler(async (req, res) => {
   if (!hostelite) {
     return res.status(404).json({ success: false, message: 'Hostelite not found' });
   }
+
+  const totalRequests = await Request.countDocuments({ hostelite: userId });
+  const approvedRequests = await Request.countDocuments({ hostelite: userId, status: 'APPROVED' });
+  const pendingRequests = await Request.countDocuments({ hostelite: userId, status: 'PENDING' });
+  const rejectedRequests = await Request.countDocuments({ hostelite: userId, status: 'REJECTED' });
 
   res.json({
     success: true,
@@ -26,7 +31,10 @@ export const getHosteliteDashboard = asyncHandler(async (req, res) => {
       academicYear: hostelite.academicYear,
       roomNumber: hostelite.roomNumber,
       hostel: hostelite.hostel,
-      requestCount: hostelite.requests?.length || 0
+      totalRequests,
+      approvedRequests,
+      pendingRequests,
+      rejectedRequests
     }
   });
 });

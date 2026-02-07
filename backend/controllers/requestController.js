@@ -195,7 +195,7 @@ export const submitMessOffRequest = asyncHandler(async (req, res) => {
   const messOffRequest = new MessOffRequest({
     requestType: 'MESS_OFF_REQUEST',
     hostelite: hosteliteId,
-    status: 'APPROVED', // Auto-approve if it passes logic (or leave pending but store calculated days)
+    status: 'PENDING',
     startDate,
     endDate,
     reason,
@@ -208,8 +208,8 @@ export const submitMessOffRequest = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     message: errorMessages.length > 0
-      ? `Mess-off request approved with adjustments: ${errorMessages.join(' ')}`
-      : 'Mess-off request submitted and approved successfully',
+      ? `Mess-off request submitted with adjustments: ${errorMessages.join(' ')}`
+      : 'Mess-off request submitted successfully',
     data: messOffRequest
   });
 });

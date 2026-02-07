@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { userService } from '@/services/userService';
 import { USER_ROLES } from '@/utils/constants';
+import { ChallanList } from '@/components/billing/ChallanList';
 
 interface DashboardStats {
   totalRequests: number;
@@ -108,6 +109,11 @@ export default function HosteliteDashboardPage() {
             />
           </div>
         )}
+
+        {/* Bill Section */}
+        <div className="mb-8">
+          <ChallanList limit={3} showViewAll={true} />
+        </div>
 
         {/* Quick Actions */}
         <div className="stat-card animate-slide-up stagger-5">

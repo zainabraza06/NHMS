@@ -2,24 +2,30 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/useAuth';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { requestService } from '@/services/api';
 import { USER_ROLES, REQUEST_STATUS } from '@/utils/constants';
 import { Request, LeaveRequest, CleaningRequest, MessOffRequest } from '@/types';
 
 export default function HosteliteRequestsPage() {
-  const { user } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const limit = 10;
 
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await requestService.getMyRequests();
+        setIsLoading(true);
+        const response = await requestService.getMyRequests(page, limit);
         if (response.success && response.data) {
           setRequests(Array.isArray(response.data) ? response.data : []);
+          setTotalPages(response.pagination?.pages || 1);
+          setTotalItems(response.pagination?.total || 0);
         } else {
           setError('Failed to load requests');
         }
@@ -31,7 +37,7 @@ export default function HosteliteRequestsPage() {
     };
 
     fetchRequests();
-  }, []);
+  }, [page]);
 
   const getStatusStyles = (status: string) => {
     switch (status) {
@@ -125,43 +131,10 @@ export default function HosteliteRequestsPage() {
                       {request.status}
                     </span>
                   </div>
-
-                  {isLeaveRequest(request) && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-                      <InfoPill label="From" value={new Date(request.startDate).toLocaleDateString()} />
-                      <InfoPill label="To" value={new Date(request.endDate).toLocaleDateString()} />
-                      <InfoPill label="Duration" value={`${request.duration} days`} />
-                      <InfoPill label="Reason" value={request.reason} />
-                      {request.parentContact && (
-                        <InfoPill label="Parent Contact" value={request.parentContact} />
-                      )}
-                    </div>
-                  )}
-
-                  {isCleaningRequest(request) && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-                      {request.preferredDate && (
-                        <InfoPill label="Preferred Date" value={new Date(request.preferredDate).toLocaleDateString()} />
-                      )}
-                      <InfoPill label="Room" value={request.roomNumber} />
-                      <InfoPill label="Floor" value={request.floor} />
-                      <InfoPill label="Type" value={request.cleaningType} />
-                      <InfoPill label="Priority" value={request.priority} />
-                      {request.notes && <InfoPill label="Notes" value={request.notes} />}
-                    </div>
-                  )}
-
-                  {isMessOffRequest(request) && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-                      <InfoPill label="From" value={new Date(request.startDate).toLocaleDateString()} />
-                      <InfoPill label="To" value={new Date(request.endDate).toLocaleDateString()} />
-                      {request.reason && <InfoPill label="Reason" value={request.reason} />}
-                      {request.mealCount && <InfoPill label="Meal Count" value={String(request.mealCount)} />}
-                      {request.refundAmount && <InfoPill label="Refund" value={`Rs. ${request.refundAmount}`} />}
-                    </div>
-                  )}
-
-                  <button className="aqua-link inline-flex items-center group">
+                  <button
+                    onClick={() => setSelectedRequest(request)}
+                    className="aqua-link inline-flex items-center group"
+                  >
                     View Details
                     <svg className="w-4 h-4 ml-2 transform transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -170,18 +143,103 @@ export default function HosteliteRequestsPage() {
                 </div>
               );
             })}
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                <p className="text-sm text-gray-500">
+                  Page {page} of {totalPages} · {totalItems} total
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                    disabled={page === 1}
+                    className="btn-secondary px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={page === totalPages}
+                    className="btn-secondary px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {selectedRequest && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="glass-card p-8 max-w-md w-full max-h-[90vh] overflow-y-auto animate-scale-in">
+            <div className="flex items-center mb-6">
+              <span className="text-3xl mr-3">{getRequestTypeLabel(selectedRequest.requestType).icon}</span>
+              <h2 className="text-2xl font-bold text-aqua-800">
+                {getRequestTypeLabel(selectedRequest.requestType).label}
+              </h2>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <InfoRow label="Status" value={selectedRequest.status} highlight />
+              <InfoRow label="Submitted" value={new Date(selectedRequest.createdAt).toLocaleDateString()} />
+
+              {isLeaveRequest(selectedRequest) && (
+                <>
+                  <InfoRow label="From" value={new Date(selectedRequest.startDate).toLocaleDateString()} />
+                  <InfoRow label="To" value={new Date(selectedRequest.endDate).toLocaleDateString()} />
+                  <InfoRow label="Duration" value={`${selectedRequest.duration} days`} />
+                  <InfoRow label="Reason" value={selectedRequest.reason} />
+                  {selectedRequest.parentContact && (
+                    <InfoRow label="Parent Contact" value={selectedRequest.parentContact} />
+                  )}
+                </>
+              )}
+
+              {isCleaningRequest(selectedRequest) && (
+                <>
+                  {selectedRequest.preferredDate && (
+                    <InfoRow label="Preferred Date" value={new Date(selectedRequest.preferredDate).toLocaleDateString()} />
+                  )}
+                  <InfoRow label="Room" value={selectedRequest.roomNumber} />
+                  <InfoRow label="Floor" value={selectedRequest.floor} />
+                  <InfoRow label="Type" value={selectedRequest.cleaningType} />
+                  <InfoRow label="Priority" value={selectedRequest.priority} />
+                  {selectedRequest.notes && <InfoRow label="Notes" value={selectedRequest.notes} />}
+                </>
+              )}
+
+              {isMessOffRequest(selectedRequest) && (
+                <>
+                  <InfoRow label="From" value={new Date(selectedRequest.startDate).toLocaleDateString()} />
+                  <InfoRow label="To" value={new Date(selectedRequest.endDate).toLocaleDateString()} />
+                  {selectedRequest.reason && <InfoRow label="Reason" value={selectedRequest.reason} />}
+                  {selectedRequest.mealCount && <InfoRow label="Meal Count" value={String(selectedRequest.mealCount)} />}
+                  {selectedRequest.refundAmount && <InfoRow label="Refund" value={`Rs. ${selectedRequest.refundAmount}`} />}
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={() => setSelectedRequest(null)}
+              className="w-full btn-secondary"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 }
 
-function InfoPill({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className="bg-aqua-50/50 rounded-lg px-3 py-2">
-      <span className="text-gray-500 text-xs font-medium">{label}:</span>
-      <span className="ml-1 text-gray-800 font-medium">{value}</span>
+    <div className={`flex justify-between items-center py-2 ${highlight ? '' : 'border-b border-gray-100'}`}>
+      <span className="text-gray-500 font-medium">{label}:</span>
+      <span className={`font-semibold ${highlight ? 'px-3 py-1 rounded-full bg-aqua-100 text-aqua-700' : 'text-gray-800'}`}>
+        {value}
+      </span>
     </div>
   );
 }
