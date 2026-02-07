@@ -21,7 +21,7 @@ interface StaffProfile {
 }
 
 export default function StaffProfilePage() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, updateUser } = useAuth();
   const [profile, setProfile] = useState<StaffProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -111,6 +111,7 @@ export default function StaffProfilePage() {
         if (profile) {
           setProfile({ ...profile, ...formData });
         }
+        updateUser(formData);
       } else {
         setError(response.error || 'Failed to update profile');
       }

@@ -116,7 +116,7 @@ export default function StaffTasksPage() {
                     <div>
                       <h2 className="text-lg font-bold text-aqua-800">Cleaning Request</h2>
                       <p className="text-gray-500 text-xs">
-                        {new Date((task as any).submittedDate).toLocaleDateString()}
+                        {new Date(((task as any).preferredDate || task.createdAt)).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
@@ -164,6 +164,9 @@ export default function StaffTasksPage() {
 
               <div className="space-y-3 mb-6">
                 <InfoRow label="Status" value={selectedTask.status} highlight />
+                {(selectedTask as any).preferredDate && (
+                  <InfoRow label="Preferred Date" value={new Date((selectedTask as any).preferredDate).toLocaleDateString()} />
+                )}
                 <InfoRow label="Room" value={(selectedTask as any).roomNumber} />
                 <InfoRow label="Type" value={(selectedTask as any).cleaningType} />
                 <InfoRow label="Priority" value={(selectedTask as any).priority} />

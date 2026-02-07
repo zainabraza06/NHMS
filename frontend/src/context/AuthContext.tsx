@@ -83,6 +83,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(null);
   }, []);
 
+  const updateUser = useCallback((updates: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) {
+        return prev;
+      }
+      const nextUser = { ...prev, ...updates };
+      authService.setUser(nextUser);
+      return nextUser;
+    });
+  }, []);
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
@@ -94,6 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     error,
     login,
     register,
+    updateUser,
     logout,
     clearError,
   };

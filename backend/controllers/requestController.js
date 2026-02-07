@@ -15,6 +15,31 @@ export const submitLeaveRequest = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: 'Please provide all required fields' });
   }
 
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return res.status(400).json({ success: false, message: 'Invalid date format' });
+  }
+
+  const now = new Date();
+  const twoDaysFromNow = new Date();
+  twoDaysFromNow.setDate(now.getDate() + 2);
+  twoDaysFromNow.setHours(0, 0, 0, 0);
+
+  if (start < twoDaysFromNow) {
+    return res.status(400).json({
+      success: false,
+      message: 'Leave requests must be applied at least 2 days in advance'
+    });
+  }
+
+  if (end < start) {
+    return res.status(400).json({
+      success: false,
+      message: 'Leave end date must be on or after the start date'
+    });
+  }
+
   const duration = calculateLeaveDuration(startDate, endDate);
 
   const leaveRequest = new LeaveRequest({
@@ -47,10 +72,27 @@ export const submitLeaveRequest = asyncHandler(async (req, res) => {
 
 export const submitCleaningRequest = asyncHandler(async (req, res) => {
   const hosteliteId = req.user.userId;
-  const { roomNumber, floor, cleaningType, priority, notes } = req.body;
+  const { roomNumber, floor, cleaningType, priority, notes, preferredDate } = req.body;
 
-  if (!roomNumber || !floor) {
-    return res.status(400).json({ success: false, message: 'Please provide room number and floor' });
+  if (!roomNumber || !floor || !preferredDate) {
+    return res.status(400).json({ success: false, message: 'Please provide room number, floor, and preferred date' });
+  }
+
+  const preferred = new Date(preferredDate);
+  if (Number.isNaN(preferred.getTime())) {
+    return res.status(400).json({ success: false, message: 'Invalid preferred date format' });
+  }
+
+  const now = new Date();
+  const twoDaysFromNow = new Date();
+  twoDaysFromNow.setDate(now.getDate() + 2);
+  twoDaysFromNow.setHours(0, 0, 0, 0);
+
+  if (preferred < twoDaysFromNow) {
+    return res.status(400).json({
+      success: false,
+      message: 'Cleaning requests must be scheduled at least 2 days in advance'
+    });
   }
 
   const cleaningRequest = new CleaningRequest({
@@ -61,6 +103,7 @@ export const submitCleaningRequest = asyncHandler(async (req, res) => {
     floor,
     cleaningType: cleaningType || 'ROUTINE',
     priority: priority || 'MEDIUM',
+    preferredDate,
     notes
   });
 

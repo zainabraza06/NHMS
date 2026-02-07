@@ -20,6 +20,10 @@ const CleaningRequestSchema = new mongoose.Schema({
     enum: ['LOW', 'MEDIUM', 'HIGH'],
     default: 'MEDIUM'
   },
+  preferredDate: {
+    type: Date,
+    required: true
+  },
   assignedStaff: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'CleaningStaff'

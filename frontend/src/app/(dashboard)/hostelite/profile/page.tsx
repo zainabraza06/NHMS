@@ -21,7 +21,7 @@ interface UserProfile {
 }
 
 export default function HosteliteProfilePage() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, updateUser } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -109,6 +109,7 @@ export default function HosteliteProfilePage() {
         if (profile) {
           setProfile({ ...profile, ...formData });
         }
+        updateUser(formData);
       } else {
         setError(response.error || 'Failed to update profile');
       }

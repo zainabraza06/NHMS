@@ -24,6 +24,7 @@ export default function NewRequestPage() {
   });
 
   const [cleaningForm, setCleaningForm] = useState<CleaningRequestForm>({
+    preferredDate: '',
     roomNumber: '',
     floor: '',
     cleaningType: 'ROUTINE',
@@ -36,10 +37,22 @@ export default function NewRequestPage() {
     reason: '',
   });
 
+  const minAdvanceDate = getMinDate(1);
+  const leaveValidation = validateLeaveDates(leaveForm.startDate, leaveForm.endDate);
+  const cleaningValidation = validateCleaningDate(cleaningForm.preferredDate);
+
   const handleLeaveSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
+
+    const start = new Date(leaveForm.startDate);
+    const end = new Date(leaveForm.endDate);
+    if (!leaveValidation.isValid) {
+      setIsLoading(false);
+      setError(leaveValidation.message);
+      return;
+    }
 
     try {
       const response = await requestService.submitLeaveRequest(leaveForm);
@@ -49,10 +62,12 @@ export default function NewRequestPage() {
           router.push('/hostelite/requests');
         }, 1500);
       } else {
-        setError(response.error || 'Failed to submit request');
+        setError(response.message || response.error || 'Failed to submit request');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
       setError('Error submitting request');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsLoading(false);
     }
@@ -63,6 +78,13 @@ export default function NewRequestPage() {
     setError('');
     setIsLoading(true);
 
+    const preferred = new Date(cleaningForm.preferredDate);
+    if (!cleaningValidation.isValid) {
+      setIsLoading(false);
+      setError(cleaningValidation.message);
+      return;
+    }
+
     try {
       const response = await requestService.submitCleaningRequest(cleaningForm);
       if (response.success) {
@@ -71,10 +93,12 @@ export default function NewRequestPage() {
           router.push('/hostelite/requests');
         }, 1500);
       } else {
-        setError(response.error || 'Failed to submit request');
+        setError(response.message || response.error || 'Failed to submit request');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
       setError('Error submitting request');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsLoading(false);
     }
@@ -93,10 +117,12 @@ export default function NewRequestPage() {
           router.push('/hostelite/requests');
         }, 1500);
       } else {
-        setError(response.error || 'Failed to submit request');
+        setError(response.message || response.error || 'Failed to submit request');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
       setError('Error submitting request');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsLoading(false);
     }
@@ -165,6 +191,7 @@ export default function NewRequestPage() {
                     value={leaveForm.startDate}
                     onChange={(e) => setLeaveForm({ ...leaveForm, startDate: e.target.value })}
                     required
+                    min={minAdvanceDate}
                     className="aqua-input"
                   />
                 </div>
@@ -178,10 +205,21 @@ export default function NewRequestPage() {
                     value={leaveForm.endDate}
                     onChange={(e) => setLeaveForm({ ...leaveForm, endDate: e.target.value })}
                     required
+                    min={leaveForm.startDate || minAdvanceDate}
                     className="aqua-input"
                   />
                 </div>
               </div>
+
+              <p className="text-xs text-gray-500">
+                Leave must be scheduled at least 1 day in advance. End date must be on or after the start date.
+              </p>
+
+              {!leaveValidation.isValid && (
+                <p className="text-xs text-rose-600">
+                  {leaveValidation.message}
+                </p>
+              )}
 
               <div>
                 <label htmlFor="reason" className="block text-sm font-semibold mb-2 text-gray-700">
@@ -213,7 +251,11 @@ export default function NewRequestPage() {
                 />
               </div>
 
-              <button type="submit" disabled={isLoading} className="w-full btn-primary py-3 text-lg">
+              <button
+                type="submit"
+                disabled={isLoading || !leaveValidation.isValid}
+                className="w-full btn-primary py-3 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
+              >
                 {isLoading ? <LoadingSpinner text="Submitting..." /> : 'Submit Leave Request'}
               </button>
             </form>
@@ -222,6 +264,30 @@ export default function NewRequestPage() {
           {/* Cleaning Request Form */}
           {requestType === 'cleaning' && (
             <form onSubmit={handleCleaningSubmit} className="space-y-5 animate-fade-in">
+              <div>
+                <label htmlFor="preferredDate" className="block text-sm font-semibold mb-2 text-gray-700">
+                  Preferred Date
+                </label>
+                <input
+                  id="preferredDate"
+                  type="date"
+                  value={cleaningForm.preferredDate}
+                  onChange={(e) => setCleaningForm({ ...cleaningForm, preferredDate: e.target.value })}
+                  required
+                  min={minAdvanceDate}
+                  className="aqua-input"
+                />
+              </div>
+
+              <p className="text-xs text-gray-500">
+                Cleaning must be scheduled at least 1 day in advance.
+              </p>
+
+              {!cleaningValidation.isValid && (
+                <p className="text-xs text-rose-600">
+                  {cleaningValidation.message}
+                </p>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="roomNumber" className="block text-sm font-semibold mb-2 text-gray-700">
@@ -286,7 +352,11 @@ export default function NewRequestPage() {
                 </div>
               </div>
 
-              <button type="submit" disabled={isLoading} className="w-full btn-primary py-3 text-lg">
+              <button
+                type="submit"
+                disabled={isLoading || !cleaningValidation.isValid}
+                className="w-full btn-primary py-3 text-lg disabled:opacity-60 disabled:cursor-not-allowed"
+              >
                 {isLoading ? <LoadingSpinner text="Submitting..." /> : 'Submit Cleaning Request'}
               </button>
             </form>
@@ -360,4 +430,58 @@ function LoadingSpinner({ text }: { text: string }) {
       {text}
     </span>
   );
+}
+
+function getMinDate(daysAhead: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + daysAhead);
+  date.setHours(0, 0, 0, 0);
+  return date.toISOString().split('T')[0];
+}
+
+function validateLeaveDates(startDate: string, endDate: string) {
+  if (!startDate || !endDate) {
+    return { isValid: false, message: 'Please provide start and end dates' };
+  }
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return { isValid: false, message: 'Please provide valid start and end dates' };
+  }
+
+  const oneDayFromNow = new Date();
+  oneDayFromNow.setDate(oneDayFromNow.getDate() + 1);
+  oneDayFromNow.setHours(0, 0, 0, 0);
+
+  if (start < oneDayFromNow) {
+    return { isValid: false, message: 'Leave requests must be applied at least 1 day in advance' };
+  }
+
+  if (end < start) {
+    return { isValid: false, message: 'End date must be on or after the start date' };
+  }
+
+  return { isValid: true, message: '' };
+}
+
+function validateCleaningDate(preferredDate: string) {
+  if (!preferredDate) {
+    return { isValid: false, message: 'Please select a preferred date' };
+  }
+
+  const preferred = new Date(preferredDate);
+  if (Number.isNaN(preferred.getTime())) {
+    return { isValid: false, message: 'Please select a valid preferred date' };
+  }
+
+  const oneDayFromNow = new Date();
+  oneDayFromNow.setDate(oneDayFromNow.getDate() + 1);
+  oneDayFromNow.setHours(0, 0, 0, 0);
+
+  if (preferred < oneDayFromNow) {
+    return { isValid: false, message: 'Cleaning requests must be scheduled at least 1 day in advance' };
+  }
+
+  return { isValid: true, message: '' };
 }

@@ -196,6 +196,9 @@ export default function ManagerRequestsPage() {
 
                 {isCleaningRequest(selectedRequest) && (
                   <>
+                    {selectedRequest.preferredDate && (
+                      <InfoRow label="Preferred Date" value={new Date(selectedRequest.preferredDate).toLocaleDateString()} />
+                    )}
                     <InfoRow label="Room" value={selectedRequest.roomNumber} />
                     <InfoRow label="Floor" value={selectedRequest.floor} />
                     <InfoRow label="Type" value={selectedRequest.cleaningType} />

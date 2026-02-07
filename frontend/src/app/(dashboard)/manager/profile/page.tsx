@@ -19,7 +19,7 @@ interface ManagerProfile {
 }
 
 export default function ManagerProfilePage() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, updateUser } = useAuth();
   const [profile, setProfile] = useState<ManagerProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -105,6 +105,7 @@ export default function ManagerProfilePage() {
         if (profile) {
           setProfile({ ...profile, ...formData });
         }
+        updateUser(formData);
       } else {
         setError(response.error || 'Failed to update profile');
       }

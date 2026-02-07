@@ -86,6 +86,7 @@ export interface CleaningRequest extends BaseRequest {
   floor: string;
   cleaningType: CleaningType;
   priority: Priority;
+  preferredDate?: string;
   assignedStaff?: CleaningStaff;
   completionDate?: string;
   notes?: string;
@@ -160,6 +161,7 @@ export interface LeaveRequestForm {
 }
 
 export interface CleaningRequestForm {
+  preferredDate: string;
   roomNumber: string;
   floor: string;
   cleaningType: CleaningType;
@@ -195,6 +197,7 @@ export interface AuthContextType {
   error: string | null;
   login: (credentials: LoginCredentials) => Promise<AuthActionResult>;
   register: (data: RegisterData) => Promise<AuthActionResult>;
+  updateUser: (updates: Partial<User>) => void;
   logout: () => void;
   clearError: () => void;
 }

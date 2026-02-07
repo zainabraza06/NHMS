@@ -140,6 +140,9 @@ export default function HosteliteRequestsPage() {
 
                   {isCleaningRequest(request) && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                      {request.preferredDate && (
+                        <InfoPill label="Preferred Date" value={new Date(request.preferredDate).toLocaleDateString()} />
+                      )}
                       <InfoPill label="Room" value={request.roomNumber} />
                       <InfoPill label="Floor" value={request.floor} />
                       <InfoPill label="Type" value={request.cleaningType} />

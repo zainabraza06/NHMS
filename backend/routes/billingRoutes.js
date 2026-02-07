@@ -5,12 +5,12 @@ import {
     createPaymentIntent,
     confirmPayment
 } from '../controllers/billingController.js';
-import { protect, authorize } from '../middleware/authMiddleware.js';
+import { authenticateToken, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // All routes protected by JWT
-router.use(protect);
+router.use(authenticateToken);
 
 // Hostelite routes
 router.get('/my-challans', authorize('HOSTELITE'), getMyChallans);
