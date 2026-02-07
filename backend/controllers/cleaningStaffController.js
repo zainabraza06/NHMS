@@ -13,15 +13,17 @@ export const getCleaningStaffDashboard = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Staff not found' });
   }
 
-  const pendingRequests = await CleaningRequest.find({
-    assignedStaff: staffId,
-    status: 'PENDING'
-  });
-
-  const completedRequests = await CleaningRequest.find({
+  const pendingCount = await CleaningRequest.countDocuments({
     assignedStaff: staffId,
     status: 'APPROVED'
   });
+
+  const completedCount = await CleaningRequest.countDocuments({
+    assignedStaff: staffId,
+    status: 'COMPLETED'
+  });
+
+  const totalAssigned = pendingCount + completedCount;
 
   res.json({
     success: true,
@@ -34,8 +36,9 @@ export const getCleaningStaffDashboard = asyncHandler(async (req, res) => {
       staffId: staff.staffId,
       shiftTiming: staff.shiftTiming,
       assignedHostels: staff.assignedHostels,
-      pendingRequestCount: pendingRequests.length,
-      completedRequestCount: completedRequests.length
+      totalAssignedTasks: totalAssigned,
+      completedTasks: completedCount,
+      pendingTasks: pendingCount
     }
   });
 });
@@ -74,24 +77,40 @@ export const updateRequestStatus = asyncHandler(async (req, res) => {
   const { requestId } = req.params;
   const { status, completionDate, notes } = req.body;
 
-  const request = await CleaningRequest.findByIdAndUpdate(
-    requestId,
-    {
-      status,
-      completionDate,
-      notes
-    },
-    { new: true, runValidators: true }
-  ).populate('hostelite');
+  const request = await CleaningRequest.findById(requestId).populate('hostelite');
 
   if (!request) {
     return res.status(404).json({ success: false, message: 'Request not found' });
   }
 
-  res.json({ 
+  // Prevent completion before the preferred date
+  if (status === 'COMPLETED') {
+    const now = new Date();
+    const preferredDate = new Date(request.preferredDate);
+
+    // Set both to start of day for accurate comparison
+    now.setHours(0, 0, 0, 0);
+    preferredDate.setHours(0, 0, 0, 0);
+
+    if (now < preferredDate) {
+      return res.status(400).json({
+        success: false,
+        message: 'Requests cannot be marked as completed before the scheduled date'
+      });
+    }
+  }
+
+  request.status = status;
+  if (completionDate) request.completionDate = completionDate;
+  if (notes) request.notes = notes;
+  request.updatedAt = new Date();
+
+  await request.save();
+
+  res.json({
     success: true,
-    message: 'Request updated successfully', 
-    data: request 
+    message: 'Request updated successfully',
+    data: request
   });
 });
 
@@ -105,10 +124,10 @@ export const getCleaningStaffProfile = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Staff not found' });
   }
 
-  res.json({ 
+  res.json({
     success: true,
     message: 'Profile retrieved successfully',
-    data: staff 
+    data: staff
   });
 });
 
@@ -131,9 +150,9 @@ export const updateCleaningStaffProfile = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Staff not found' });
   }
 
-  res.json({ 
+  res.json({
     success: true,
-    message: 'Profile updated successfully', 
-    data: staff 
+    message: 'Profile updated successfully',
+    data: staff
   });
 });

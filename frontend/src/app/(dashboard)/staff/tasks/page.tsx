@@ -38,19 +38,20 @@ export default function StaffTasksPage() {
   const handleMarkComplete = async (requestId: string) => {
     setUpdatingStatus(true);
     try {
-      const response = await requestService.updateCleaningRequestStatus(requestId, REQUEST_STATUS.APPROVED);
+      const response = await requestService.updateCleaningRequestStatus(requestId, REQUEST_STATUS.COMPLETED);
       if (response.success) {
         setTasks((prev) =>
           prev.map((task) =>
-            task.id === requestId ? { ...task, status: REQUEST_STATUS.APPROVED as any } : task
+            task.id === requestId ? { ...task, status: REQUEST_STATUS.COMPLETED as any } : task
           )
         );
         setSelectedTask(null);
       } else {
-        setError('Failed to update task status');
+        const errorMsg = (response as any).message || 'Failed to update task status';
+        setError(errorMsg);
       }
-    } catch (err) {
-      setError('Error updating task');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error updating task');
     } finally {
       setUpdatingStatus(false);
     }
@@ -59,6 +60,8 @@ export default function StaffTasksPage() {
   const getStatusStyles = (status: string) => {
     switch (status) {
       case REQUEST_STATUS.APPROVED:
+        return 'bg-blue-100 text-blue-700 border-blue-200';
+      case REQUEST_STATUS.COMPLETED:
         return 'bg-emerald-100 text-emerald-700 border-emerald-200';
       case REQUEST_STATUS.REJECTED:
         return 'bg-rose-100 text-rose-700 border-rose-200';
@@ -155,7 +158,7 @@ export default function StaffTasksPage() {
 
         {/* Modal */}
         {selectedTask && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
             <div className="glass-card p-8 max-w-md w-full animate-scale-in">
               <div className="flex items-center mb-6">
                 <span className="text-3xl mr-3">🧹</span>
@@ -175,25 +178,44 @@ export default function StaffTasksPage() {
                 )}
               </div>
 
-              {selectedTask.status === REQUEST_STATUS.PENDING && (
-                <button
-                  onClick={() => handleMarkComplete(selectedTask.id)}
-                  disabled={updatingStatus}
-                  className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 font-semibold text-white shadow-md
-                             transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:transform-none mb-4"
-                >
-                  {updatingStatus ? (
-                    <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Updating...
-                    </span>
-                  ) : (
-                    '✓ Mark as Completed'
-                  )}
-                </button>
+              {selectedTask.status === REQUEST_STATUS.APPROVED && (
+                <div className="mb-4">
+                  {(() => {
+                    const now = new Date();
+                    const preferredDate = new Date((selectedTask as any).preferredDate);
+                    now.setHours(0, 0, 0, 0);
+                    preferredDate.setHours(0, 0, 0, 0);
+                    const isTooEarly = now < preferredDate;
+
+                    return (
+                      <>
+                        <button
+                          onClick={() => handleMarkComplete(selectedTask.id)}
+                          disabled={updatingStatus || isTooEarly}
+                          className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 font-semibold text-white shadow-md
+                                     transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:grayscale disabled:transform-none"
+                        >
+                          {updatingStatus ? (
+                            <span className="flex items-center justify-center">
+                              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Updating...
+                            </span>
+                          ) : (
+                            '✓ Mark as Completed'
+                          )}
+                        </button>
+                        {isTooEarly && (
+                          <p className="text-rose-500 text-xs text-center mt-2 font-medium">
+                            Cannot complete before scheduled date
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
               )}
 
               <button

@@ -37,7 +37,7 @@ const HostelSchema = new mongoose.Schema(
     hostelites: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Hostelite'
+        ref: 'HOSTELITE'
       }
     ],
     cleaningStaff: [

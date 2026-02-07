@@ -9,13 +9,17 @@ const RequestSchema = new mongoose.Schema(
     },
     hostelite: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Hostelite',
+      ref: 'HOSTELITE',
       required: true
     },
     status: {
       type: String,
-      enum: ['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'],
+      enum: ['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED', 'COMPLETED'],
       default: 'PENDING'
+    },
+    rejectionReason: {
+      type: String,
+      trim: true
     },
     description: String,
     createdAt: {

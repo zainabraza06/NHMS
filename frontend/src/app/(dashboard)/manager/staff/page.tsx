@@ -62,6 +62,7 @@ export default function ManagerStaffPage() {
                     <th className="px-6 py-4 text-left font-semibold">Email</th>
                     <th className="px-6 py-4 text-left font-semibold">Staff ID</th>
                     <th className="px-6 py-4 text-left font-semibold">Assigned Hostels</th>
+                    <th className="px-6 py-4 text-left font-semibold">Active Requests</th>
                     <th className="px-6 py-4 text-left font-semibold">Salary</th>
                   </tr>
                 </thead>
@@ -89,9 +90,12 @@ export default function ManagerStaffPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-gray-600">
-                        {((member as any).assignedHostels?.length || 0) > 0
-                          ? (member as any).assignedHostels.join(', ')
-                          : '-'}
+                        {formatAssignedHostels((member as any).assignedHostels)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded-md text-sm font-medium">
+                          {(member as any).activeCleaningRequests ?? 0}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         {(member as any).salary ? (
@@ -110,4 +114,15 @@ export default function ManagerStaffPage() {
       </div>
     </ProtectedRoute>
   );
+}
+
+function formatAssignedHostels(hostels?: Array<any>) {
+  if (!hostels || hostels.length === 0) {
+    return '-';
+  }
+
+  return hostels
+    .map((hostel) => (typeof hostel === 'string' ? hostel : hostel?.name))
+    .filter(Boolean)
+    .join(', ') || '-';
 }

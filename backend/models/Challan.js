@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const ChallanSchema = new mongoose.Schema({
     hostelite: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Hostelite',
+            ref: 'HOSTELITE',
         required: true
     },
     month: {

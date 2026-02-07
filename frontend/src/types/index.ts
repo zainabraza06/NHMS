@@ -67,6 +67,7 @@ export interface BaseRequest {
   requestType: RequestType;
   hostelite: Hostelite;
   status: RequestStatus;
+  rejectionReason?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -171,7 +171,7 @@ export default function HosteliteRequestsPage() {
       </div>
 
       {selectedRequest && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
           <div className="glass-card p-8 max-w-md w-full max-h-[90vh] overflow-y-auto animate-scale-in">
             <div className="flex items-center mb-6">
               <span className="text-3xl mr-3">{getRequestTypeLabel(selectedRequest.requestType).icon}</span>
@@ -182,6 +182,9 @@ export default function HosteliteRequestsPage() {
 
             <div className="space-y-3 mb-6">
               <InfoRow label="Status" value={selectedRequest.status} highlight />
+              {selectedRequest.status === REQUEST_STATUS.REJECTED && selectedRequest.rejectionReason && (
+                <InfoRow label="Rejection Reason" value={selectedRequest.rejectionReason} />
+              )}
               <InfoRow label="Submitted" value={new Date(selectedRequest.createdAt).toLocaleDateString()} />
 
               {isLeaveRequest(selectedRequest) && (

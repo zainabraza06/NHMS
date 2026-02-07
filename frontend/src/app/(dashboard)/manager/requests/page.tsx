@@ -14,6 +14,7 @@ export default function ManagerRequestsPage() {
   const [error, setError] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -34,14 +35,24 @@ export default function ManagerRequestsPage() {
     fetchRequests();
   }, []);
 
+  useEffect(() => {
+    if (selectedRequest) {
+      setRejectionReason('');
+    }
+  }, [selectedRequest]);
+
   const handleApprove = async (requestId: string) => {
+    if (!requestId) {
+      setError('Unable to approve: missing request ID');
+      return;
+    }
     setActionLoading(true);
     try {
       const response = await requestService.approveRequest(requestId);
       if (response.success && response.data) {
         setRequests((prev) =>
           prev.map((req) =>
-            req.id === requestId ? { ...req, status: REQUEST_STATUS.APPROVED as any } : req
+            getRequestId(req) === requestId ? { ...req, status: REQUEST_STATUS.APPROVED as any } : req
           )
         );
         setSelectedRequest(null);
@@ -56,13 +67,23 @@ export default function ManagerRequestsPage() {
   };
 
   const handleReject = async (requestId: string) => {
+    if (!requestId) {
+      setError('Unable to reject: missing request ID');
+      return;
+    }
+    if (!rejectionReason.trim()) {
+      setError('Please provide a rejection reason');
+      return;
+    }
     setActionLoading(true);
     try {
-      const response = await requestService.rejectRequest(requestId);
+      const response = await requestService.rejectRequest(requestId, rejectionReason.trim());
       if (response.success && response.data) {
         setRequests((prev) =>
           prev.map((req) =>
-            req.id === requestId ? { ...req, status: REQUEST_STATUS.REJECTED as any } : req
+            getRequestId(req) === requestId
+              ? { ...req, status: REQUEST_STATUS.REJECTED as any, rejectionReason: rejectionReason.trim() }
+              : req
           )
         );
         setSelectedRequest(null);
@@ -132,9 +153,10 @@ export default function ManagerRequestsPage() {
           <div className="space-y-4">
             {requests.map((request, index) => {
               const typeInfo = getRequestTypeInfo(request.requestType);
+              const requestId = getRequestId(request);
               return (
                 <div
-                  key={request.id}
+                  key={requestId || `${request.requestType}-${index}`}
                   className={`stat-card animate-slide-up stagger-${Math.min(index + 1, 6)}`}
                 >
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
@@ -142,6 +164,11 @@ export default function ManagerRequestsPage() {
                       <span className="text-2xl mr-3">{typeInfo.icon}</span>
                       <div>
                         <h2 className="text-xl font-bold text-aqua-800">{typeInfo.label}</h2>
+                        {request.hostelite && (
+                          <p className="text-xs text-gray-500">
+                            {request.hostelite.firstName} {request.hostelite.lastName} · {request.hostelite.email}
+                          </p>
+                        )}
                         <p className="text-gray-500 text-sm">
                           Submitted on {new Date(request.createdAt).toLocaleDateString()}
                         </p>
@@ -169,7 +196,7 @@ export default function ManagerRequestsPage() {
 
         {/* Modal */}
         {selectedRequest && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
             <div className="glass-card p-8 max-w-md w-full max-h-[90vh] overflow-y-auto animate-scale-in">
               <div className="flex items-center mb-6">
                 <span className="text-3xl mr-3">{getRequestTypeInfo(selectedRequest.requestType).icon}</span>
@@ -180,6 +207,12 @@ export default function ManagerRequestsPage() {
 
               <div className="space-y-3 mb-6">
                 <InfoRow label="Status" value={selectedRequest.status} highlight />
+                {selectedRequest.hostelite && (
+                  <InfoRow
+                    label="Hostelite"
+                    value={`${selectedRequest.hostelite.firstName} ${selectedRequest.hostelite.lastName} (${selectedRequest.hostelite.email})`}
+                  />
+                )}
                 <InfoRow label="Submitted" value={new Date(selectedRequest.createdAt).toLocaleDateString()} />
 
                 {isLeaveRequest(selectedRequest) && (
@@ -219,23 +252,42 @@ export default function ManagerRequestsPage() {
               </div>
 
               {selectedRequest.status === REQUEST_STATUS.PENDING && (
-                <div className="flex space-x-4 mb-4">
-                  <button
-                    onClick={() => handleApprove(selectedRequest.id)}
-                    disabled={actionLoading}
-                    className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 font-semibold text-white shadow-md
-                               transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:transform-none"
-                  >
-                    ✓ Approve
-                  </button>
-                  <button
-                    onClick={() => handleReject(selectedRequest.id)}
-                    disabled={actionLoading}
-                    className="flex-1 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 py-3 font-semibold text-white shadow-md
-                               transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:transform-none"
-                  >
-                    ✗ Reject
-                  </button>
+                <div className="space-y-4 mb-4">
+                  {!getRequestId(selectedRequest) && (
+                    <p className="text-xs text-rose-600">
+                      Unable to update: missing request ID.
+                    </p>
+                  )}
+                  <div>
+                    <label className="block text-xs font-semibold mb-2 text-gray-600">
+                      Rejection Reason
+                    </label>
+                    <textarea
+                      value={rejectionReason}
+                      onChange={(e) => setRejectionReason(e.target.value)}
+                      rows={3}
+                      className="w-full aqua-input resize-none"
+                      placeholder="Explain why this request is rejected"
+                    />
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => handleApprove(getRequestId(selectedRequest))}
+                      disabled={actionLoading || !getRequestId(selectedRequest)}
+                      className="flex-1 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 font-semibold text-white shadow-md
+                                 transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:transform-none"
+                    >
+                      ✓ Approve
+                    </button>
+                    <button
+                      onClick={() => handleReject(getRequestId(selectedRequest))}
+                      disabled={actionLoading || !getRequestId(selectedRequest) || !rejectionReason.trim()}
+                      className="flex-1 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 py-3 font-semibold text-white shadow-md
+                                 transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:transform-none"
+                    >
+                      ✗ Reject
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -262,4 +314,8 @@ function InfoRow({ label, value, highlight }: { label: string; value: string; hi
       </span>
     </div>
   );
+}
+
+function getRequestId(request: Request) {
+  return (request as any)._id || request.id;
 }

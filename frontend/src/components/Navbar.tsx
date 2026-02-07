@@ -14,9 +14,10 @@ export const Navbar: React.FC = () => {
     router.push('/login');
   };
 
+  const roleBase = user ? getRoleBasePath(user.role) : '';
   const navLinks = user ? [
-    { name: 'Dashboard', href: `/${user.role.toLowerCase().split('_')[0]}/dashboard` },
-    { name: 'Profile', href: `/${user.role.toLowerCase().split('_')[0]}/profile` },
+    { name: 'Dashboard', href: `/${roleBase}/dashboard` },
+    { name: 'Profile', href: `/${roleBase}/profile` },
   ] : [];
 
   return (
@@ -86,3 +87,16 @@ export const Navbar: React.FC = () => {
     </nav>
   );
 };
+
+function getRoleBasePath(role: string) {
+  switch (role) {
+    case 'HOSTELITE':
+      return 'hostelite';
+    case 'HOSTEL_MANAGER':
+      return 'manager';
+    case 'CLEANING_STAFF':
+      return 'staff';
+    default:
+      return '';
+  }
+}

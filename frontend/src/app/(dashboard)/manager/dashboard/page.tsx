@@ -33,13 +33,14 @@ export default function ManagerDashboardPage() {
       try {
         const response = await userService.getManagerDashboard();
         if (response && response.data) {
+          const statsData = response.data.stats || {};
           setStats({
-            totalRequests: response.data.totalRequests || 0,
-            approvedRequests: response.data.approvedRequests || 0,
-            pendingRequests: response.data.pendingRequests || 0,
-            rejectedRequests: response.data.rejectedRequests || 0,
-            totalHostelites: response.data.totalHostelites || 0,
-            totalStaff: response.data.totalStaff || 0,
+            totalRequests: statsData.totalRequests || 0,
+            approvedRequests: statsData.approvedRequests || 0,
+            pendingRequests: statsData.pendingRequests || 0,
+            rejectedRequests: statsData.rejectedRequests || 0,
+            totalHostelites: statsData.totalHostelites || 0,
+            totalStaff: statsData.totalStaff || 0,
           });
         } else {
           setError('Failed to load dashboard');

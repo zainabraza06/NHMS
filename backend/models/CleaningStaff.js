@@ -18,9 +18,10 @@ const CleaningStaffSchema = new mongoose.Schema({
   cleaningRequests: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'CleaningRequest'
+      ref: 'CLEANING_REQUEST'
     }
   ],
+  lastAssignedAt: Date,
   salary: Number,
   joinDate: Date,
   shiftTiming: {

@@ -21,10 +21,14 @@ export const getManagerDashboard = asyncHandler(async (req, res) => {
 
   const hosteliteCount = await Hostelite.countDocuments({ hostel: hostel._id });
   const staffCount = await CleaningStaff.countDocuments({ assignedHostels: hostel._id });
-  const pendingRequests = await Request.countDocuments({
-    hostelite: { $in: await Hostelite.find({ hostel: hostel._id }).select('_id') },
-    status: 'PENDING'
-  });
+
+  const hostelites = await Hostelite.find({ hostel: hostel._id }).select('_id');
+  const hosteliteIds = hostelites.map((h) => h._id);
+
+  const totalRequests = await Request.countDocuments({ hostelite: { $in: hosteliteIds } });
+  const approvedRequests = await Request.countDocuments({ hostelite: { $in: hosteliteIds }, status: 'APPROVED' });
+  const pendingRequests = await Request.countDocuments({ hostelite: { $in: hosteliteIds }, status: 'PENDING' });
+  const rejectedRequests = await Request.countDocuments({ hostelite: { $in: hosteliteIds }, status: 'REJECTED' });
 
   res.json({
     success: true,
@@ -39,9 +43,12 @@ export const getManagerDashboard = asyncHandler(async (req, res) => {
         hostel: manager.hostel
       },
       stats: {
+        totalRequests,
+        approvedRequests,
         totalHostelites: hosteliteCount,
         totalStaff: staffCount,
         pendingRequests,
+        rejectedRequests,
         occupiedRooms: hostel.occupiedRooms,
         totalRooms: hostel.totalRooms,
         occupancyRate: ((hostel.occupiedRooms / hostel.totalRooms) * 100).toFixed(2) + '%'
@@ -92,20 +99,92 @@ export const getManagerRequests = asyncHandler(async (req, res) => {
 export const approveRequest = asyncHandler(async (req, res) => {
   const { requestId } = req.params;
 
+  const baseRequest = await Request.findById(requestId).populate('hostelite');
+
+  if (!baseRequest) {
+    return res.status(404).json({ success: false, message: 'Request not found' });
+  }
+
+  if (baseRequest.requestType === 'CLEANING_REQUEST') {
+    const hostelId = baseRequest.hostelite?.hostel;
+    if (!hostelId) {
+      return res.status(400).json({ success: false, message: 'Hostelite hostel not found for assignment' });
+    }
+
+    const staffMembers = await CleaningStaff.find({ assignedHostels: hostelId })
+      .select('_id lastAssignedAt')
+      .lean();
+
+    if (!staffMembers.length) {
+      return res.status(400).json({ success: false, message: 'No cleaning staff available for this hostel' });
+    }
+
+    const staffIds = staffMembers.map((staff) => staff._id);
+    const requestCounts = await CleaningRequest.aggregate([
+      { $match: { assignedStaff: { $in: staffIds }, status: 'APPROVED' } },
+      { $group: { _id: '$assignedStaff', count: { $sum: 1 } } }
+    ]);
+
+    const countMap = new Map(requestCounts.map((entry) => [String(entry._id), entry.count]));
+
+    const staffMember = staffMembers.reduce((selected, current) => {
+      if (!selected) {
+        return current;
+      }
+
+      const selectedCount = countMap.get(String(selected._id)) || 0;
+      const currentCount = countMap.get(String(current._id)) || 0;
+
+      if (currentCount < selectedCount) {
+        return current;
+      }
+
+      if (currentCount === selectedCount) {
+        const selectedLast = selected.lastAssignedAt ? new Date(selected.lastAssignedAt).getTime() : 0;
+        const currentLast = current.lastAssignedAt ? new Date(current.lastAssignedAt).getTime() : 0;
+        if (currentLast < selectedLast) {
+          return current;
+        }
+      }
+
+      return selected;
+    }, null);
+
+    const updatedRequest = await CleaningRequest.findByIdAndUpdate(
+      requestId,
+      {
+        status: 'APPROVED',
+        assignedStaff: staffMember._id,
+        updatedAt: new Date()
+      },
+      { new: true }
+    ).populate('hostelite');
+
+    await CleaningStaff.findByIdAndUpdate(
+      staffMember._id,
+      {
+        lastAssignedAt: new Date(),
+        $addToSet: { cleaningRequests: requestId }
+      }
+    );
+
+    return res.json({
+      success: true,
+      message: 'Request approved and assigned successfully',
+      data: updatedRequest
+    });
+  }
+
   const request = await Request.findByIdAndUpdate(
     requestId,
     { status: 'APPROVED', updatedAt: new Date() },
     { new: true }
   ).populate('hostelite');
 
-  if (!request) {
-    return res.status(404).json({ success: false, message: 'Request not found' });
-  }
-
-  res.json({ 
+  res.json({
     success: true,
-    message: 'Request approved successfully', 
-    data: request 
+    message: 'Request approved successfully',
+    data: request
   });
 });
 
@@ -113,9 +192,13 @@ export const rejectRequest = asyncHandler(async (req, res) => {
   const { requestId } = req.params;
   const { reason } = req.body;
 
+  if (!reason || !String(reason).trim()) {
+    return res.status(400).json({ success: false, message: 'Rejection reason is required' });
+  }
+
   const request = await Request.findByIdAndUpdate(
     requestId,
-    { status: 'REJECTED', updatedAt: new Date() },
+    { status: 'REJECTED', rejectionReason: String(reason).trim(), updatedAt: new Date() },
     { new: true }
   ).populate('hostelite');
 
@@ -123,10 +206,10 @@ export const rejectRequest = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Request not found' });
   }
 
-  res.json({ 
+  res.json({
     success: true,
-    message: 'Request rejected successfully', 
-    data: request 
+    message: 'Request rejected successfully',
+    data: request
   });
 });
 
@@ -177,16 +260,32 @@ export const getManagerStaff = asyncHandler(async (req, res) => {
   const skip = (page - 1) * limit;
 
   const staff = await CleaningStaff.find({ assignedHostels: manager.hostel })
+    .populate('assignedHostels')
     .skip(skip)
     .limit(parseInt(limit))
     .sort({ joinDate: -1 });
+
+  const staffIds = staff.map((member) => member._id);
+  const activeCounts = await CleaningRequest.aggregate([
+    { $match: { assignedStaff: { $in: staffIds }, status: 'APPROVED' } },
+    { $group: { _id: '$assignedStaff', count: { $sum: 1 } } }
+  ]);
+  const countMap = new Map(activeCounts.map((entry) => [String(entry._id), entry.count]));
+
+  const staffWithCounts = staff.map((member) => {
+    const data = member.toObject();
+    return {
+      ...data,
+      activeCleaningRequests: countMap.get(String(member._id)) || 0
+    };
+  });
 
   const total = await CleaningStaff.countDocuments({ assignedHostels: manager.hostel });
 
   res.json({
     success: true,
     message: 'Manager staff retrieved successfully',
-    data: staff,
+    data: staffWithCounts,
     pagination: {
       total,
       page: parseInt(page),
@@ -205,10 +304,10 @@ export const getManagerProfile = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Manager not found' });
   }
 
-  res.json({ 
+  res.json({
     success: true,
     message: 'Profile retrieved successfully',
-    data: manager 
+    data: manager
   });
 });
 
@@ -230,9 +329,9 @@ export const updateManagerProfile = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Manager not found' });
   }
 
-  res.json({ 
+  res.json({
     success: true,
-    message: 'Profile updated successfully', 
-    data: manager 
+    message: 'Profile updated successfully',
+    data: manager
   });
 });
