@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { USER_ROLES } from '@/utils/constants';
-import { userService } from '@/services/userService';
+import { adminService } from '@/services/api';
 
 export default function AdminUsersPage() {
     const [hostelites, setHostelites] = useState<any[]>([]);
@@ -16,10 +16,11 @@ export default function AdminUsersPage() {
 
     const fetchUsers = async () => {
         try {
-            // Reusing existing userService.getAllHostelites for now
-            const response = await userService.getAllHostelites(1, 100);
-            if (response && response.data) {
-                setHostelites(response.data);
+            const response = await adminService.getAllHostelitesGlobal(1, 100);
+            if (response.success) {
+                setHostelites(response.data || []);
+            } else {
+                setError('Failed to fetch users');
             }
         } catch (err) {
             setError('Failed to fetch users');

@@ -32,7 +32,7 @@ const HostelSchema = new mongoose.Schema(
     },
     manager: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'HostelManager'
+      ref: 'HOSTEL_MANAGER'
     },
     hostelites: [
       {

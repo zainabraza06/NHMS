@@ -3,7 +3,8 @@ import {
     getGlobalStats,
     getAllComplaintsGlobal,
     getAllRequestsGlobal,
-    getAllHostels
+    getAllHostels,
+    getAllHostelitesGlobal
 } from '../controllers/adminController.js';
 import { authenticateToken, authorize } from '../middleware/auth.js';
 
@@ -16,5 +17,6 @@ router.get('/stats', getGlobalStats);
 router.get('/complaints', getAllComplaintsGlobal);
 router.get('/requests', getAllRequestsGlobal);
 router.get('/hostels', getAllHostels);
+router.get('/hostelites', getAllHostelitesGlobal);
 
 export default router;

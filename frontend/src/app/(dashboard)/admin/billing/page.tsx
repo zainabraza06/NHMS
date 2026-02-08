@@ -44,7 +44,7 @@ export default function AdminBillingPage() {
 
     const fetchHostelites = async () => {
         try {
-            const response = await userService.getAllHostelites(1, 100, { hostel: hostelFilter || undefined });
+            const response = await adminService.getAllHostelitesGlobal(1, 100, { hostel: hostelFilter || undefined });
             if (response.success) setHostelites(response.data || []);
         } catch (err) { console.error(err); }
     };

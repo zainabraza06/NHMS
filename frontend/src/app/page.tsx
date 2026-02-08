@@ -25,6 +25,9 @@ export default function Home() {
           case USER_ROLES.HOSTEL_MANAGER:
             router.push('/manager/dashboard');
             break;
+          case USER_ROLES.ADMIN:
+            router.push('/admin/dashboard');
+            break;
           default:
             router.push('/login');
         }

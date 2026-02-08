@@ -26,6 +26,9 @@ export default function LoginPage() {
         case USER_ROLES.HOSTEL_MANAGER:
           router.push('/manager/dashboard');
           break;
+        case USER_ROLES.ADMIN:
+          router.push('/admin/dashboard');
+          break;
         default:
           router.push('/');
       }
@@ -48,6 +51,8 @@ export default function LoginPage() {
           router.push('/staff/dashboard');
         } else if (role === 'HOSTEL_MANAGER') {
           router.push('/manager/dashboard');
+        } else if (role === 'ADMIN') {
+          router.push('/admin/dashboard');
         } else {
           router.push('/');
         }

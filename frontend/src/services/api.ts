@@ -167,10 +167,16 @@ export const adminService = {
     limit: number = 10,
     filters: any = {}
   ): Promise<ApiResponse<Complaint[]>> {
+    const cleanFilters: any = {};
+    Object.keys(filters).forEach(key => {
+      if (filters[key] !== undefined && filters[key] !== '') {
+        cleanFilters[key] = filters[key];
+      }
+    });
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
-      ...filters
+      ...cleanFilters
     });
     const response = await apiClient.get<ApiResponse<Complaint[]>>(
       `${API_ENDPOINTS.ADMIN_COMPLAINTS}?${params.toString()}`
@@ -183,10 +189,16 @@ export const adminService = {
     limit: number = 10,
     filters: any = {}
   ): Promise<ApiResponse<Request[]>> {
+    const cleanFilters: any = {};
+    Object.keys(filters).forEach(key => {
+      if (filters[key] !== undefined && filters[key] !== '') {
+        cleanFilters[key] = filters[key];
+      }
+    });
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
-      ...filters
+      ...cleanFilters
     });
     const response = await apiClient.get<ApiResponse<Request[]>>(
       `${API_ENDPOINTS.ADMIN_REQUESTS}?${params.toString()}`
@@ -196,6 +208,22 @@ export const adminService = {
 
   async getAllHostels(): Promise<ApiResponse<Hostel[]>> {
     const response = await apiClient.get<ApiResponse<Hostel[]>>(API_ENDPOINTS.ADMIN_HOSTELS);
+    return response.data;
+  },
+
+  async getAllHostelitesGlobal(
+    page: number = 1,
+    limit: number = 10,
+    filters: any = {}
+  ): Promise<ApiResponse<any[]>> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...filters
+    });
+    const response = await apiClient.get<ApiResponse<any[]>>(
+      `/admin/hostelites?${params.toString()}`
+    );
     return response.data;
   },
 };

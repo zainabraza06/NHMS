@@ -121,8 +121,54 @@ export const getAllRequestsGlobal = asyncHandler(async (req, res) => {
 // @access  Private (Admin)
 export const getAllHostels = asyncHandler(async (req, res) => {
     const hostels = await Hostel.find().populate('manager', 'firstName lastName email');
+    const hostelCounts = await Hostelite.aggregate([
+        { $group: { _id: '$hostel', count: { $sum: 1 } } }
+    ]);
+    const countMap = new Map(hostelCounts.map((entry) => [String(entry._id), entry.count]));
+
+    const hostelsWithOccupancy = hostels.map((hostel) => {
+        const occupiedRooms = countMap.get(String(hostel._id)) || 0;
+        return { ...hostel.toObject(), occupiedRooms };
+    });
     res.json({
         success: true,
-        data: hostels
+        data: hostelsWithOccupancy
+    });
+});
+// @desc    Get all hostelites (Global)
+// @route   GET /api/admin/hostelites
+// @access  Private (Admin)
+export const getAllHostelitesGlobal = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10, hostel, search } = req.query;
+    const filter = {};
+    if (hostel && hostel !== 'undefined') filter.hostel = hostel;
+    if (search) {
+        const searchRegex = new RegExp(search, 'i');
+        filter.$or = [
+            { firstName: searchRegex },
+            { lastName: searchRegex },
+            { universityId: searchRegex }
+        ];
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const hostelites = await Hostelite.find(filter)
+        .populate('hostel', 'name')
+        .sort({ firstName: 1 })
+        .skip(skip)
+        .limit(parseInt(limit));
+
+    const total = await Hostelite.countDocuments(filter);
+
+    res.json({
+        success: true,
+        data: hostelites,
+        pagination: {
+            total,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            pages: Math.ceil(total / limit)
+        }
     });
 });
