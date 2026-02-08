@@ -6,6 +6,18 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { USER_ROLES } from '@/utils/constants';
 import { Hostel } from '@/types';
 
+type HostelFormData = {
+    name: string;
+    hostelCode: string;
+    location: string;
+    totalRooms: string;
+    totalFloors: string;
+    messStatus: Hostel['messStatus'];
+    messCharges: string;
+    description: string;
+    facilities: string;
+};
+
 export default function AdminHostelsPage() {
     const [hostels, setHostels] = useState<Hostel[]>([]);
     const [loading, setLoading] = useState(true);
@@ -24,7 +36,7 @@ export default function AdminHostelsPage() {
         phoneNumber: '',
         hostel: ''
     });
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<HostelFormData>({
         name: '',
         hostelCode: '',
         location: '',
@@ -70,6 +82,9 @@ export default function AdminHostelsPage() {
                 messCharges: formData.messCharges ? Number(formData.messCharges) : 0,
                 description: formData.description.trim(),
                 facilities: formData.facilities
+                    .split(',')
+                    .map((facility) => facility.trim())
+                    .filter(Boolean)
             });
 
             if (response.success) {
@@ -241,7 +256,12 @@ export default function AdminHostelsPage() {
                                     <label className="block text-sm font-semibold text-slate-700 mb-2">Mess Status</label>
                                     <select
                                         value={formData.messStatus}
-                                        onChange={(e) => setFormData({ ...formData, messStatus: e.target.value })}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                messStatus: e.target.value as Hostel['messStatus']
+                                            })
+                                        }
                                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-aqua-400 outline-none transition-all"
                                     >
                                         <option value="ACTIVE">Active</option>
