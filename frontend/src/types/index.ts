@@ -47,6 +47,7 @@ export interface HostelManager extends User {
 
 // Hostel Type
 export interface Hostel {
+  _id?: string;
   id: string;
   name: string;
   hostelCode: string;
@@ -54,7 +55,7 @@ export interface Hostel {
   totalRooms: number;
   totalFloors: number;
   occupiedRooms: number;
-  manager: HostelManager;
+  manager?: HostelManager;
   messStatus: 'ACTIVE' | 'INACTIVE' | 'CLOSED';
   messCharges: number;
   description?: string;

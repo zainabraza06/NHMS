@@ -211,6 +211,18 @@ export const adminService = {
     return response.data;
   },
 
+  async createHostel(data: Partial<Hostel>): Promise<ApiResponse<Hostel>> {
+    const response = await apiClient.post<ApiResponse<Hostel>>(API_ENDPOINTS.ADMIN_HOSTELS, data);
+    return response.data;
+  },
+
+  async getAvailableRooms(hostelId: string): Promise<ApiResponse<string[]>> {
+    const response = await apiClient.get<ApiResponse<string[]>>(
+      API_ENDPOINTS.ADMIN_HOSTEL_AVAILABLE_ROOMS(hostelId)
+    );
+    return response.data;
+  },
+
   async getAllHostelitesGlobal(
     page: number = 1,
     limit: number = 10,
@@ -222,8 +234,28 @@ export const adminService = {
       ...filters
     });
     const response = await apiClient.get<ApiResponse<any[]>>(
-      `/admin/hostelites?${params.toString()}`
+      `${API_ENDPOINTS.ADMIN_HOSTELITES}?${params.toString()}`
     );
+    return response.data;
+  },
+
+  async createHostelite(data: any): Promise<ApiResponse<any>> {
+    const response = await apiClient.post<ApiResponse<any>>(API_ENDPOINTS.ADMIN_HOSTELITES, data);
+    return response.data;
+  },
+
+  async deleteHostelite(hosteliteId: string): Promise<ApiResponse> {
+    const response = await apiClient.delete<ApiResponse>(`${API_ENDPOINTS.ADMIN_HOSTELITES}/${hosteliteId}`);
+    return response.data;
+  },
+
+  async createHostelManager(data: any): Promise<ApiResponse<any>> {
+    const response = await apiClient.post<ApiResponse<any>>(API_ENDPOINTS.ADMIN_MANAGERS, data);
+    return response.data;
+  },
+
+  async deleteHostelManager(managerId: string): Promise<ApiResponse> {
+    const response = await apiClient.delete<ApiResponse>(`${API_ENDPOINTS.ADMIN_MANAGERS}/${managerId}`);
     return response.data;
   },
 };

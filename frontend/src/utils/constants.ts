@@ -49,6 +49,9 @@ export const API_ENDPOINTS = {
   ADMIN_COMPLAINTS: '/admin/complaints',
   ADMIN_REQUESTS: '/admin/requests',
   ADMIN_HOSTELS: '/admin/hostels',
+  ADMIN_HOSTELITES: '/admin/hostelites',
+  ADMIN_MANAGERS: '/admin/managers',
+  ADMIN_HOSTEL_AVAILABLE_ROOMS: (id: string) => `/admin/hostels/${id}/available-rooms`,
 };
 
 export const USER_ROLES = {
