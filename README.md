@@ -572,8 +572,8 @@ node scripts/verifyRefinedLogic.js
 
 ### 📍 Current Hosting
 
-- Backend API is deployed on Render.
-- Frontend (Next.js) is deployed on Vercel.
+- Backend API is deployed on Render: https://nust-hostel-management-system.onrender.com
+- Frontend (Next.js) is deployed on Vercel: https://nhms-eight.vercel.app
 
 ### 🌐 Environment Preparation
 
