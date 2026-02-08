@@ -1,311 +1,1104 @@
-# 🏛️ NUST Hostel Management System (NHMS) - MERN Stack
+# NUST Hostel Management System (NHMS)
 
-A comprehensive hostel management application built with **MERN** (MongoDB, Express.js, React, Node.js) featuring role-based access control and modern web technologies.
+<div align="center">
+  <h3>🏠 A modern, role-based hostel management system for academic institutions</h3>
+  <p>Built with MERN Stack (MongoDB, Express.js, React, Node.js)</p>
+</div>
 
-## 📋 Project Overview
+---
 
-NHMS is designed to streamline hostel operations with three key user roles:
+## 📖 Table of Contents
 
-- **👨‍🎓 Hostelites (Students)**: Manage profiles, submit requests (leave, cleaning, mess-off)
-- **🧹 Cleaning Staff**: Manage assigned tasks and hostel floors
-- **👔 Hostel Managers**: Oversee all hostelites, staff, and requests
+- [📝 Overview](#-overview)
+- [✨ Features](#-features)
+- [🛠️ Tech Stack](#-tech-stack)
+- [🏗️ Project Architecture](#-project-architecture)
+- [🚀 Quick Start](#-quick-start)
+- [📋 Detailed Setup](#-detailed-setup)
+- [🔌 API Documentation](#-api-documentation)
+- [🗄️ Database Schema](#-database-schema)
+- [👥 User Roles & Permissions](#-user-roles--permissions)
+- [🧪 Testing](#-testing)
+- [🚀 Deployment](#-deployment)
+- [🤝 Contributing](#-contributing)
+- [🐛 Troubleshooting](#-troubleshooting)
+- [📄 License](#-license)
 
-## 🏗️ Technology Stack
+---
 
-### Backend
-- **Runtime**: Node.js 16+
-- **Server**: Express.js 4.18+
+## 📝 Overview
+
+**NHMS** is a comprehensive digital solution for hostel management in academic institutions, specifically designed to address the inefficiencies of manual processes at NUST (National University of Science and Technology).
+
+### 🎯 Problem Statement
+
+At NUST, complaints and requests are often registered manually, leading to:
+- 📍 Long queues and crowded service centers
+- ⏱️ Extended wait times, especially during holidays
+- 📝 Paper-based processes prone to errors
+- 🔄 Slow routing and response times
+- 👁️ Lack of transparency in request status
+
+### 💡 Solution
+
+NHMS streamlines hostel management through:
+- 🖥️ **Self-service digital platform** for request submissions
+- ⚡ **Faster routing** with automated workflows
+- 📱 **Real-time tracking** of complaints and requests
+- 👨‍💼 **Role-based dashboards** for different user types
+- 🏠 **Integrated room management** with availability tracking
+
+---
+
+## ✨ Features
+
+### 🔐 Authentication & Authorization
+- **JWT-based authentication** with secure password hashing
+- **Role-based access control** (Admin, Hostel Manager, Cleaning Staff, Hostelite)
+- **Protected routes** with middleware validation
+- **Session management** with token refresh
+
+### 👨‍💼 Admin Features
+- 🏢 **Hostel Management**: Create, view, and manage hostels
+- 👥 **User Management**: Add hostelites with room assignment
+- 🏃‍♂️ **Manager Assignment**: Assign/remove hostel managers
+- 📊 **Dashboard**: Real-time statistics and occupancy rates
+- 🗑️ **User Removal**: Remove hostelites and managers
+
+### 🏨 Hostel Manager Features
+- 📋 **Request Management**: Review and approve/reject requests
+- 📞 **Complaint Handling**: Respond to hostelite complaints
+- 👥 **Hostelite Oversight**: View assigned hostelite information
+- 📊 **Analytics**: Monitor hostel performance metrics
+- 🧹 **Staff Coordination**: Manage cleaning staff assignments
+
+### 🏠 Hostelite Features
+- 📝 **Request Submission**: Leave requests, mess-off requests
+- 🧹 **Cleaning Requests**: Schedule cleaning services
+- 📞 **Complaint Filing**: Submit complaints with tracking
+- 💰 **Billing**: View monthly challans and payment status
+- 📊 **Dashboard**: Personal overview of requests and bills
+
+### 🧹 Cleaning Staff Features
+- 📋 **Task Management**: View assigned cleaning tasks
+- ✅ **Status Updates**: Mark tasks as completed
+- 📅 **Schedule View**: Daily and weekly task schedules
+- 📊 **Performance Tracking**: Task completion metrics
+
+### 💰 Billing & Payments
+- 📅 **Automated Challan Generation**: Monthly billing cycles
+- 💳 **Payment Integration**: Stripe-powered payment processing
+- 📊 **Payment Tracking**: Real-time payment status
+- 📧 **Notifications**: Email reminders and receipts
+
+---
+
+## 🛠️ Tech Stack
+
+### Backend Technologies
+- **Runtime**: Node.js (v16+)
+- **Framework**: Express.js with async error handling
 - **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT (jsonwebtoken)
-- **Security**: Helmet, CORS, bcryptjs
-- **Email**: Nodemailer with SMTP
-- **Validation**: Custom validators
+- **Authentication**: JSON Web Tokens (JWT) + bcryptjs
+- **Security**: Helmet, CORS, Input validation
+- **Email**: Nodemailer integration
+- **Payments**: Stripe SDK
+- **Scheduling**: Node-cron for automated tasks
+- **Development**: Nodemon for hot reloading
 
-### Frontend
-- **Framework**: Next.js 14 (App Router)
-- **Library**: React 18
-- **Language**: TypeScript (strict mode)
-- **Styling**: Tailwind CSS 3.3.6
-- **State**: React Context API
+### Frontend Technologies
+- **Framework**: Next.js 14+ (App Router)
+- **Language**: TypeScript for type safety
+- **UI Library**: React 18 with React Hooks
+- **Styling**: Tailwind CSS + Heroicons
+- **Forms**: React Hook Form + Zod validation
 - **HTTP Client**: Axios with interceptors
-- **Forms**: React Hook Form + Zod
-- **UI Components**: Custom components
+- **State Management**: Zustand + React Context
+- **Notifications**: React Hot Toast
+- **Date Handling**: date-fns
+- **Payments**: Stripe React components
 
-## 📂 Project Structure
+### DevOps & Tools
+- **Version Control**: Git
+- **Package Manager**: npm
+- **Code Quality**: ESLint, TypeScript compiler
+- **Environment**: dotenv for configuration
+- **API Testing**: Built-in test scripts
+- **Development**: Hot reloading for both frontend and backend
+
+---
+
+## 🏗️ Project Architecture
 
 ```
 Nust_Hostel_Management_System/
+├── 📁 backend/
+│   ├── 📁 config/
+│   │   └── database.js              # MongoDB connection setup
+│   ├── 📁 controllers/
+│   │   ├── adminController.js       # Admin-specific operations
+│   │   ├── authController.js        # Authentication logic
+│   │   ├── billingController.js     # Payment and challan management
+│   │   ├── complaintController.js   # Complaint handling
+│   │   ├── hosteliteController.js   # Hostelite operations
+│   │   ├── managerController.js     # Manager-specific functions
+│   │   └── requestController.js     # Request processing
+│   ├── 📁 middleware/
+│   │   ├── auth.js                  # JWT verification
+│   │   └── errorHandler.js          # Global error handling
+│   ├── 📁 models/
+│   │   ├── User.js                  # Base user model
+│   │   ├── Hostelite.js             # Hostelite discriminator
+│   │   ├── HostelManager.js         # Manager discriminator
+│   │   ├── CleaningStaff.js         # Staff discriminator
+│   │   ├── Hostel.js                # Hostel information
+│   │   ├── Request.js               # Base request model
+│   │   ├── LeaveRequest.js          # Leave request type
+│   │   ├── MessOffRequest.js        # Mess-off request type
+│   │   ├── CleaningRequest.js       # Cleaning request type
+│   │   ├── Complaint.js             # Complaint model
+│   │   └── Challan.js               # Billing model
+│   ├── 📁 routes/
+│   │   ├── authRoutes.js            # Authentication endpoints
+│   │   ├── adminRoutes.js           # Admin API routes
+│   │   ├── managerRoutes.js         # Manager API routes
+│   │   ├── hosteliteRoutes.js       # Hostelite API routes
+│   │   ├── staffRoutes.js           # Cleaning staff routes
+│   │   ├── complaintRoutes.js       # Complaint management
+│   │   ├── requestRoutes.js         # Request handling
+│   │   └── billingRoutes.js         # Billing and payments
+│   ├── 📁 scripts/
+│   │   ├── seedUsers.js             # Database seeding
+│   │   ├── seedChallans.js          # Sample billing data
+│   │   └── verifyRefinedLogic.js    # Logic verification
+│   ├── 📁 services/
+│   │   └── cronService.js           # Scheduled tasks
+│   ├── 📁 utils/
+│   │   ├── tokenUtils.js            # JWT utilities
+│   │   └── validators.js            # Input validation
+│   ├── 📁 tests/
+│   │   ├── billing.test.js          # Billing logic tests
+│   │   └── messOff.test.js          # Mess-off logic tests
+│   └── server.js                    # Application entry point
 │
-├── backend/
-│   ├── config/
-│   │   ├── env.js                 # Configuration management
-│   │   └── database.js            # MongoDB connection
-│   ├── controllers/               # Request handlers
-│   ├── models/                    # Mongoose schemas
-│   ├── routes/                    # API routes
-│   ├── middleware/                # Auth & error handling
-│   ├── utils/                     # Email, tokens, validators
-│   ├── server.js                  # Entry point
-│   └── package.json
+├── 📁 frontend/
+│   ├── 📁 src/
+│   │   ├── 📁 app/
+│   │   │   ├── layout.tsx           # Root layout
+│   │   │   ├── page.tsx             # Landing page
+│   │   │   ├── globals.css          # Global styles
+│   │   │   ├── 📁 (auth)/          # Authentication pages
+│   │   │   │   ├── login/
+│   │   │   │   └── register/
+│   │   │   └── 📁 (dashboard)/     # Role-based dashboards
+│   │   │       ├── admin/
+│   │   │       ├── manager/
+│   │   │       ├── hostelite/
+│   │   │       └── staff/
+│   │   ├── 📁 components/
+│   │   │   ├── Navbar.tsx           # Navigation component
+│   │   │   ├── ProtectedRoute.tsx   # Route protection
+│   │   │   └── billing/            # Billing components
+│   │   ├── 📁 context/
+│   │   │   └── AuthContext.tsx      # Global auth state
+│   │   ├── 📁 hooks/
+│   │   │   └── useAuth.ts           # Authentication hook
+│   │   ├── 📁 services/
+│   │   │   ├── api.ts               # Base API configuration
+│   │   │   ├── authService.ts       # Auth API calls
+│   │   │   ├── billingService.ts    # Billing API calls
+│   │   │   └── userService.ts       # User management APIs
+│   │   ├── 📁 types/
+│   │   │   └── index.ts             # TypeScript definitions
+│   │   └── 📁 utils/
+│   │       ├── api-client.ts        # HTTP client setup
+│   │       └── constants.ts         # App constants
+│   ├── next.config.js               # Next.js configuration
+│   ├── tailwind.config.js           # Tailwind CSS config
+│   ├── tsconfig.json                # TypeScript config
+│   └── package.json                 # Dependencies
 │
-├── frontend/
-│   ├── src/
-│   │   ├── app/                   # Next.js pages & routes
-│   │   ├── components/            # Reusable components
-│   │   ├── services/              # API calls
-│   │   ├── context/               # State management
-│   │   ├── hooks/                 # Custom hooks
-│   │   ├── types/                 # TypeScript definitions
-│   │   └── utils/                 # Helpers & constants
-│   ├── package.json
-│   └── tsconfig.json
-│
-└── 📚 DOCUMENTATION
-    ├── README.md (this file)
-    ├── SETUP_GUIDE.md
-    ├── QUICK_REFERENCE.md
-    ├── TYPE_FIXES_SUMMARY.md
-    └── MONGODB_ATLAS_SETUP.md
+├── README.md                        # This file
+└── package.json                     # Root package configuration
 ```
 
-## 🎯 Features
-
-### For Hostelites
-✅ User Registration & Email Verification
-✅ Profile Management (Personal & Academic Info)
-✅ Submit Requests (Leave, Cleaning, Mess-Off)
-✅ Track Request Status in Real-time
-✅ View Request History
-✅ Responsive Dashboard
-✅ Password Reset & Change
-
-### For Cleaning Staff
-✅ View Assigned Tasks
-✅ Update Task Status
-✅ Track Assigned Hostels/Floors
-✅ Profile Management
-
-### For Hostel Managers
-✅ Dashboard with Statistics
-✅ Manage All Hostelites
-✅ Manage Cleaning Staff
-✅ Review & Manage All Requests
-✅ Assign Staff to Tasks
-
-### Security Features
-🔒 JWT Authentication
-🔒 Password Hashing (bcryptjs)
-🔒 Email Verification
-🔒 Password Reset Token
-🔒 Role-Based Access Control
-🔒 Input Validation
-🔒 CORS Protection
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 16+ & npm
-- MongoDB (local or Atlas account)
 
-### 1. Backend Setup
+Ensure you have the following installed:
+- **Node.js** (v16 or higher) - [Download](https://nodejs.org/)
+- **MongoDB** (local installation or MongoDB Atlas) - [Download](https://www.mongodb.com/try/download/community)
+- **Git** for version control - [Download](https://git-scm.com/)
+
+### 🏃‍♂️ One-Command Setup
+
 ```bash
-cd backend
-npm install
-cp .env.example .env
-# Edit .env with MongoDB URI and Gmail credentials
-npm start
-```
+# Clone the repository
+git clone <repository-url>
+cd Nust_Hostel_Management_System
 
-### 2. Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
+# Install dependencies for both frontend and backend
+cd backend && npm install
+cd ../frontend && npm install
 
-Visit `http://localhost:3000`
+# Set up environment variables (see detailed setup below)
+# ... configure .env files ...
 
-## 🔐 MongoDB Configuration
-
-### Option A: MongoDB Atlas (Cloud)
-1. Create account: https://www.mongodb.com/cloud/atlas
-2. Create cluster and user
-3. Update `.env`:
-```
-MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/nhms?retryWrites=true&w=majority
-```
-
-### Option B: Local MongoDB
-```
-MONGODB_URI=mongodb://localhost:27017/nhms
-```
-
-See [MONGODB_ATLAS_SETUP.md](./MONGODB_ATLAS_SETUP.md) for detailed instructions.
-
-## 📧 Email Configuration
-
-Set up Gmail SMTP:
-1. Enable 2-Step Verification: https://support.google.com/accounts/answer/185833
-2. Create App Password: https://myaccount.google.com/apppasswords
-3. Update `.env`:
-```
-SMTP_EMAIL=your-email@gmail.com
-SMTP_PASSWORD=16-character-app-password
-```
-
-## 📡 Key API Endpoints
-
-### Authentication
-```
-POST   /api/auth/register              - Register user
-POST   /api/auth/login                 - Login user
-GET    /api/auth/verify-email          - Verify email
-POST   /api/auth/password-reset-request
-POST   /api/auth/reset-password        - Reset password
-```
-
-### Hostelite
-```
-GET    /api/hostelites/profile         - Get profile
-PUT    /api/hostelites/profile         - Update profile
-GET    /api/hostelites/dashboard       - Get dashboard
-POST   /api/hostelites/requests        - Create request
-GET    /api/hostelites/requests        - Get requests
-```
-
-### Staff
-```
-GET    /api/staff/profile              - Get profile
-GET    /api/staff/dashboard            - Get dashboard
-GET    /api/staff/requests             - Get tasks
-```
-
-### Manager
-```
-GET    /api/managers/profile           - Get profile
-GET    /api/managers/dashboard         - Get statistics
-GET    /api/managers/requests          - All requests
-GET    /api/managers/hostelites        - All students
-GET    /api/managers/staff             - All staff
-```
-
-## 📚 Documentation
-
-- **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** - Complete setup & deployment
-- **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Developer quick reference
-- **[MONGODB_ATLAS_SETUP.md](./MONGODB_ATLAS_SETUP.md)** - Database setup
-- **[TYPE_FIXES_SUMMARY.md](./TYPE_FIXES_SUMMARY.md)** - TypeScript types
-
-## 🐛 Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| DB connection fails | Check MongoDB running, verify URI |
-| CORS errors | Check FRONTEND_URL in `.env` |
-| Port in use | `npx kill-port 5000` or `npx kill-port 3000` |
-| TypeScript errors | Run `npm run build` in frontend |
-| Email not working | Verify Gmail app password |
-
-## 🛠️ Development
-
-### Terminal 1 - Backend
-```bash
-cd backend && npm start
-```
-
-### Terminal 2 - Frontend
-```bash
+# Start both services
+cd backend && npm run dev &
 cd frontend && npm run dev
 ```
 
-## ✅ Status
-
-- [x] Backend API (36 endpoints)
-- [x] Frontend UI (14 pages)
-- [x] Authentication system
-- [x] Type safety (TypeScript strict)
-- [x] MongoDB Atlas support
-- [x] Email functionality
-- [x] Full documentation
-
-**Status**: ✅ Production Ready
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-**Version**: 1.0.0 | **Last Updated**: 2024
+## 📋 Detailed Setup
 
-| Layer       | Technology              |
-|-------------|--------------------------|
-| Backend     | Java, Spring Boot, Spring Security |
-| Database    | MySQL, Hibernate, JPA    |
-| Frontend    | HTML, CSS, JavaScript    |
-| Tools       | Maven, Git, Postman      |
+### 1. 🗄️ Database Setup
 
----
+#### Option A: Local MongoDB
+```bash
+# Install MongoDB Community Edition
+# Windows: Download from MongoDB website
+# macOS: brew install mongodb-community
+# Ubuntu: apt-get install mongodb
 
-## 📂 Project Structure
-
+# Start MongoDB service
+mongod --dbpath /your/data/path
 ```
 
-HMS/
-├── src/
-│   ├── main/
-│   │   ├── java/com/hostelmanagement/
-│   │   │   ├── controller/       # Request handling (Hostelite, Manager, Staff)
-│   │   │   ├── service/          # Business logic (mess off validation, assignment)
-│   │   │   ├── repository/       # JPA interfaces
-│   │   │   ├── model/ (entity/)  # JPA entities (User, Request, Staff)
-│   │   │   └── security/         # Spring Security config
-│   │   └── resources/
-│   │       ├── templates/        # HTML pages
-│   │       ├── static/           # CSS, JS
-│   │       └── application.properties # DB config
-├── pom.xml                        # Project dependencies
+#### Option B: MongoDB Atlas (Recommended)
+1. Create account at [MongoDB Atlas](https://cloud.mongodb.com/)
+2. Create a new cluster
+3. Get connection string: `mongodb+srv://username:password@cluster.mongodb.net/nhms`
 
-````
+### 2. ⚙️ Backend Configuration
+
+```bash
+cd backend
+npm install
+```
+
+Create `.env` file in the backend directory:
+
+```env
+# Database Configuration
+MONGODB_URI=mongodb://localhost:27017/nhms
+# OR for MongoDB Atlas:
+# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/nhms
+
+# Security
+JWT_SECRET=your-super-secure-jwt-secret-key-here
+JWT_EXPIRES_IN=7d
+
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# Frontend URL (for CORS)
+CLIENT_URL=http://localhost:3000
+
+# Email Configuration (optional)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-app-password
+
+# Stripe Configuration (for payments)
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+```
+
+#### Start Backend Server
+
+```bash
+# Development mode with auto-reload
+npm run dev
+
+# Production mode
+npm start
+
+# Run tests
+npm run test:logic
+```
+
+### 3. 🎨 Frontend Configuration
+
+```bash
+cd frontend
+npm install
+```
+
+Create `.env.local` file in the frontend directory:
+
+```env
+# API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+
+# Stripe Configuration (for payments)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
+
+# App Configuration
+NEXT_PUBLIC_APP_NAME="NUST Hostel Management System"
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+#### Start Frontend Application
+
+```bash
+# Development mode
+npm run dev
+
+# Build for production
+npm run build
+npm start
+
+# Type checking
+npm run type-check
+
+# Linting
+npm run lint
+```
+
+### 4. 🌱 Database Seeding (Optional)
+
+```bash
+cd backend
+
+# Seed initial users (admin, managers, hostelites)
+npm run seed:users
+
+# Seed sample billing data
+node scripts/seedChallans.js
+```
+
+### 5. 🔑 Default Credentials
+
+After seeding, you can use these credentials:
+
+```
+Admin:
+Email: admin@nust.edu.pk
+Password: admin123
+
+Manager:
+Email: manager@nust.edu.pk  
+Password: manager123
+
+Hostelite:
+Email: hostelite@nust.edu.pk
+Password: hostelite123
+```
 
 ---
 
-## 🧪 Setup Instructions
+## 🔌 API Documentation
 
-1. **Clone the Repository**
+### Base URL
+```
+http://localhost:5000/api
+```
+
+### 🔐 Authentication Endpoints
+
+#### POST `/auth/register`
+Register a new user
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe", 
+  "email": "john.doe@nust.edu.pk",
+  "password": "securePassword",
+  "phoneNumber": "+92-300-1234567",
+  "role": "HOSTELITE"
+}
+```
+
+#### POST `/auth/login`
+User login
+```json
+{
+  "email": "john.doe@nust.edu.pk",
+  "password": "securePassword"
+}
+```
+
+### 👨‍💼 Admin Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/admin/hostels` | Get all hostels |
+| POST | `/admin/hostels` | Create new hostel |
+| GET | `/admin/users` | Get all users |
+| POST | `/admin/hostelites` | Create hostelite |
+| POST | `/admin/managers` | Create/assign manager |
+| DELETE | `/admin/hostelites/:id` | Remove hostelite |
+| DELETE | `/admin/managers/:id` | Remove manager |
+| GET | `/admin/available-rooms/:hostelId` | Get available rooms |
+
+### 🏨 Manager Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/manager/requests` | Get hostelite requests |
+| PUT | `/manager/requests/:id` | Update request status |
+| GET | `/manager/complaints` | Get complaints |
+| PUT | `/manager/complaints/:id` | Respond to complaint |
+| GET | `/manager/hostelites` | Get assigned hostelites |
+
+### 🏠 Hostelite Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/hostelite/profile` | Get profile |
+| PUT | `/hostelite/profile` | Update profile |
+| GET | `/hostelite/requests` | Get my requests |
+| POST | `/hostelite/requests/leave` | Submit leave request |
+| POST | `/hostelite/requests/mess-off` | Submit mess-off request |
+| POST | `/hostelite/requests/cleaning` | Submit cleaning request |
+| GET | `/hostelite/complaints` | Get my complaints |
+| POST | `/hostelite/complaints` | Submit complaint |
+| GET | `/hostelite/bills` | Get billing history |
+
+### 🧹 Staff Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/staff/tasks` | Get assigned tasks |
+| PUT | `/staff/tasks/:id` | Update task status |
+| GET | `/staff/profile` | Get profile |
+
+### 💰 Billing Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/billing/challans/:hosteliteId` | Get user challans |
+| POST | `/billing/payment-intent` | Create payment intent |
+| POST | `/billing/webhook` | Stripe webhook handler |
+
+---
+
+## 🗄️ Database Schema
+
+### 👤 User Model (Base Model with Discriminators)
+```javascript
+{
+  firstName: String,
+  lastName: String,
+  email: String (unique),
+  password: String (hashed),
+  phoneNumber: String,
+  role: Enum ['ADMIN', 'HOSTEL_MANAGER', 'CLEANING_STAFF', 'HOSTELITE'],
+  isActive: Boolean,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+### 🏠 Hostelite Model (Discriminator)
+```javascript
+{
+  // Inherits from User
+  rollNumber: String (unique),
+  roomNumber: String,
+  hostel: ObjectId (ref: Hostel),
+  emergencyContact: Object,
+  guardianInfo: Object,
+  messOptOut: Boolean,
+  messOptOutDates: [Date]
+}
+```
+
+### 🏨 Hostel Manager Model (Discriminator)
+```javascript
+{
+  // Inherits from User  
+  employeeId: String (unique),
+  assignedHostel: ObjectId (ref: Hostel)
+}
+```
+
+### 🧹 Cleaning Staff Model (Discriminator)
+```javascript
+{
+  // Inherits from User
+  employeeId: String (unique),
+  assignedHostels: [ObjectId] (ref: Hostel),
+  shiftTiming: String
+}
+```
+
+### 🏢 Hostel Model
+```javascript
+{
+  name: String,
+  location: String,
+  totalRooms: Number,
+  facilities: [String],
+  manager: ObjectId (ref: HostelManager),
+  isActive: Boolean,
+  createdAt: Date
+}
+```
+
+### 📝 Request Model (Base Model)
+```javascript
+{
+  hostelite: ObjectId (ref: Hostelite),
+  type: Enum ['LEAVE', 'CLEANING', 'MESS_OFF'],
+  status: Enum ['PENDING', 'APPROVED', 'REJECTED'],
+  submissionDate: Date,
+  reviewedBy: ObjectId (ref: User),
+  reviewDate: Date,
+  comments: String
+}
+```
+
+### 💰 Challan Model
+```javascript
+{
+  hostelite: ObjectId (ref: Hostelite),
+  month: Number,
+  year: Number,
+  amount: Number,
+  dueDate: Date,
+  paidDate: Date,
+  status: Enum ['PENDING', 'PAID', 'OVERDUE'],
+  paymentMethod: String,
+  stripePaymentIntentId: String
+}
+```
+
+---
+
+## 👥 User Roles & Permissions
+
+### 🔑 Admin (System Administrator)
+**Full system access and management capabilities**
+
+**Permissions:**
+- ✅ Create/manage hostels and room allocations
+- ✅ Add/remove hostelites with room assignments
+- ✅ Assign/remove hostel managers
+- ✅ View system-wide statistics and reports
+- ✅ Access all user data and activity logs
+- ✅ Manage system configurations
+
+**Dashboard Features:**
+- 📊 Real-time occupancy rates across all hostels
+- 👥 User management with role assignments
+- 🏢 Hostel management with capacity tracking
+- 📈 System analytics and performance metrics
+
+### 🏨 Hostel Manager
+**Manages assigned hostel operations**
+
+**Permissions:**
+- ✅ Review and approve/reject hostelite requests
+- ✅ Respond to complaints from assigned hostelites
+- ✅ View hostelite information for assigned hostel
+- ✅ Coordinate with cleaning staff
+- ✅ Generate hostel-specific reports
+
+**Dashboard Features:**
+- 📋 Pending requests requiring review
+- 📞 Unresolved complaints
+- 👥 Hostelite directory for assigned hostel
+- 📊 Hostel performance metrics
+
+### 🏠 Hostelite (Student Resident)
+**Self-service portal for hostel residents**
+
+**Permissions:**
+- ✅ Submit leave requests with date ranges
+- ✅ Request cleaning services for room
+- ✅ Submit mess-off requests
+- ✅ File complaints with tracking
+- ✅ View personal billing and payment history
+- ✅ Update personal profile information
+
+**Dashboard Features:**
+- 📝 Request submission forms
+- 📋 Request status tracking
+- 💰 Current and past bills
+- 📞 Complaint history
+- 👤 Profile management
+
+### 🧹 Cleaning Staff
+**Task management for cleaning personnel**
+
+**Permissions:**
+- ✅ View assigned cleaning tasks
+- ✅ Update task completion status
+- ✅ View daily/weekly schedules
+- ✅ Access contact information for emergencies
+
+**Dashboard Features:**
+- 📅 Daily task list with priorities
+- ✅ Task completion tracking
+- 📊 Performance metrics
+- 📞 Emergency contact information
+
+---
+
+## 🧪 Testing
+
+### Backend Testing
+
+```bash
+cd backend
+
+# Run all tests
+npm run test:logic
+
+# Run specific test files
+node tests/billing.test.js
+node tests/messOff.test.js
+
+# Manual API testing
+# Use tools like Postman or curl to test endpoints
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@nust.edu.pk","password":"admin123"}'
+```
+
+### Frontend Testing
+
+```bash
+cd frontend
+
+# Type checking
+npm run type-check
+
+# Linting
+npm run lint
+
+# Build test
+npm run build
+```
+
+### 🗂️ Test Data
+
+The system includes seeding scripts for development and testing:
+
+```bash
+# Seed test users
+node scripts/seedUsers.js
+
+# Seed billing data  
+node scripts/seedChallans.js
+
+# Verify business logic
+node scripts/verifyRefinedLogic.js
+```
+
+---
+
+## 🚀 Deployment
+
+### 🌐 Environment Preparation
+
+#### Production Environment Variables
+
+**Backend (.env.production):**
+```env
+MONGODB_URI=mongodb+srv://production-user:password@cluster.mongodb.net/nhms-prod
+JWT_SECRET=your-production-jwt-secret-very-long-and-secure
+NODE_ENV=production
+PORT=5000
+CLIENT_URL=https://your-domain.com
+```
+
+**Frontend (.env.production):**
+```env
+NEXT_PUBLIC_API_URL=https://api.your-domain.com/api
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_your_live_stripe_key
+```
+
+### 🐳 Docker Deployment
+
+Create `Dockerfile` for backend:
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 5000
+CMD ["npm", "start"]
+```
+
+Create `Dockerfile` for frontend:
+```dockerfile
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:18-alpine AS runner
+WORKDIR /app
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/package*.json ./
+RUN npm ci --only=production
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+### ☁️ Cloud Deployment Options
+
+#### Vercel (Frontend) + Railway (Backend)
+```bash
+# Deploy frontend to Vercel
+npx vercel --prod
+
+# Deploy backend to Railway
+# Connect GitHub repo to Railway dashboard
+```
+
+#### Heroku Deployment
+```bash
+# Backend deployment
+heroku create nhms-backend
+heroku addons:create mongolab
+git push heroku main
+
+# Frontend deployment  
+heroku create nhms-frontend
+heroku config:set NEXT_PUBLIC_API_URL=https://nhms-backend.herokuapp.com/api
+git push heroku main
+```
+
+#### AWS Deployment
+```bash
+# Use AWS Elastic Beanstalk for backend
+# Use AWS Amplify for frontend
+# Use AWS DocumentDB for MongoDB
+```
+
+### 📊 Production Monitoring
+
+- **Backend**: Add logging with Winston or Morgan
+- **Frontend**: Implement error tracking with Sentry
+- **Database**: Monitor with MongoDB Atlas monitoring tools
+- **Performance**: Use tools like New Relic or DataDog
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions to improve NHMS! Please follow these guidelines:
+
+### 🔧 Development Workflow
+
+1. **Fork the repository**
    ```bash
-   git clone https://github.com/zainabraza06/Nust_Hostel_Management_System.git
-   cd hostel-management-system
-````
-
-2. **Configure MySQL Database**
-
-   * Create a database named `hms_db`
-   * Update `src/main/resources/application.properties` with your DB credentials
-
-3. **Run the Project**
-
-   ```bash
-   ./mvnw spring-boot:run
+   git clone https://github.com/your-username/nhms.git
+   cd nhms
    ```
 
-4. **Access the App**
+2. **Create feature branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
 
-   * Visit `http://localhost:8080`
-   * Use seeded users 
+3. **Set up development environment**
+   ```bash
+   cd backend && npm install
+   cd ../frontend && npm install
+   ```
+
+4. **Make your changes**
+   - Follow existing code style and patterns
+   - Add comments for complex logic
+   - Update documentation if needed
+
+5. **Test your changes**
+   ```bash
+   # Backend tests
+   cd backend && npm run test:logic
+   
+   # Frontend checks
+   cd frontend && npm run type-check && npm run lint
+   ```
+
+6. **Commit and push**
+   ```bash
+   git add .
+   git commit -m "feat: add your feature description"
+   git push origin feature/your-feature-name
+   ```
+
+7. **Create Pull Request**
+   - Describe your changes clearly
+   - Link any related issues
+   - Add screenshots for UI changes
+
+### 📝 Code Style Guidelines
+
+#### Backend (JavaScript/Node.js)
+```javascript
+// Use camelCase for variables and functions
+const getUserById = async (userId) => {
+  try {
+    // Always handle errors appropriately
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user;
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    throw error;
+  }
+};
+
+// Use meaningful names and JSDoc comments
+/**
+ * Creates a new hostel with room allocation
+ * @param {Object} hostelData - Hostel information
+ * @param {string} hostelData.name - Hostel name
+ * @param {number} hostelData.totalRooms - Total number of rooms
+ * @returns {Promise<Object>} Created hostel object
+ */
+```
+
+#### Frontend (React/TypeScript)
+```typescript
+// Use TypeScript interfaces
+interface HosteliteProps {
+  hostelite: Hostelite;
+  onUpdate: (id: string) => void;
+}
+
+// Use functional components with hooks
+const HosteliteCard: React.FC<HosteliteProps> = ({ hostelite, onUpdate }) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleUpdate = async () => {
+    setLoading(true);
+    try {
+      await updateHostelite(hostelite.id);
+      onUpdate(hostelite.id);
+    } catch (error) {
+      toast.error('Failed to update hostelite');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    // Use Tailwind CSS classes consistently
+    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+      {/* Component content */}
+    </div>
+  );
+};
+```
+
+### 🐛 Bug Reports
+
+When reporting bugs, please include:
+
+1. **Environment details**
+   - OS and version
+   - Node.js version  
+   - Browser (for frontend issues)
+
+2. **Steps to reproduce**
+   - Detailed step-by-step instructions
+   - Expected vs actual behavior
+
+3. **Error messages**
+   - Full error stack traces
+   - Console logs
+   - Screenshots if applicable
+
+4. **Context**
+   - User role when error occurred
+   - Relevant data or configurations
+
+### 💡 Feature Requests
+
+For new features, please:
+
+1. **Check existing issues** to avoid duplicates
+2. **Describe the use case** and user story
+3. **Provide mockups** or wireframes if applicable
+4. **Consider implementation** complexity and alternatives
 
 ---
 
-## 📚 Learning Outcomes
+## 🐛 Troubleshooting
 
-* Role-based access with Spring Security
-* Enforcing real-world business logic in service layer
-* Clean MVC architecture in Spring Boot
-* Seamless front-back integration
-* Team collaboration using Git and GitHub
+### Common Issues and Solutions
+
+#### 🚨 Backend Issues
+
+**Issue: "Database connection failed"**
+```bash
+# Solution: Check MongoDB connection
+# 1. Verify MongoDB is running
+mongod --version
+
+# 2. Check connection string in .env
+MONGODB_URI=mongodb://localhost:27017/nhms
+
+# 3. Test connection manually
+mongo mongodb://localhost:27017/nhms
+```
+
+**Issue: "JWT token invalid"**
+```bash
+# Solution: Check JWT configuration
+# 1. Verify JWT_SECRET in .env is set
+# 2. Check token expiration settings
+# 3. Clear browser localStorage and re-login
+```
+
+**Issue: "Port 5000 already in use"**
+```bash
+# Solution: Kill process or change port
+# Windows:
+netstat -ano | findstr :5000
+taskkill /PID <PID> /F
+
+# macOS/Linux:
+lsof -ti:5000 | xargs kill -9
+
+# Or change PORT in .env
+PORT=5001
+```
+
+#### 🎨 Frontend Issues
+
+**Issue: "API calls failing with CORS error"**
+```bash
+# Solution: Check CORS configuration
+# 1. Verify CLIENT_URL in backend .env
+CLIENT_URL=http://localhost:3000
+
+# 2. Check API URL in frontend .env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+```
+
+**Issue: "Next.js build fails"**
+```bash
+# Solution: Fix TypeScript errors
+npm run type-check
+
+# Clear cache and rebuild
+rm -rf .next
+npm run build
+```
+
+**Issue: "Styles not loading"**
+```bash
+# Solution: Rebuild Tailwind CSS
+npm run build
+# Or restart dev server
+npm run dev
+```
+
+#### 🗄️ Database Issues
+
+**Issue: "Seeding fails"**
+```bash
+# Solution: Reset database
+# 1. Drop existing database
+mongo
+use nhms
+db.dropDatabase()
+
+# 2. Run seeding scripts
+node scripts/seedUsers.js
+node scripts/seedChallans.js
+```
+
+**Issue: "Validation errors"**
+```bash
+# Solution: Check model schemas
+# 1. Verify required fields are provided
+# 2. Check data types match schema
+# 3. Ensure unique fields don't have duplicates
+```
+
+### 📞 Getting Help
+
+If you're still having issues:
+
+1. **Check the issues page** for similar problems
+2. **Join our Discord** (if available) for community support
+3. **Create a detailed issue** with reproduction steps
+4. **Contact maintainers** for critical issues
+
+### 🔧 Development Tips
+
+1. **Use proper error handling** in async functions
+2. **Test API endpoints** with Postman or curl
+3. **Check browser console** for frontend errors
+4. **Use MongoDB Compass** for database inspection
+5. **Enable debug logging** during development
 
 ---
 
-## ⚠️ Known Issues / Future Improvements
+## 📄 License
 
-* Add notifications for request status changes
-* Auto-bill generation
-* Adding other types of requests
-* Implement analytics dashboard for manager
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+### 📜 MIT License Summary
+
+```
+Copyright (c) 2024 NUST Hostel Management System
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+### 🙏 Acknowledgments
+
+- **NUST (National University of Science and Technology)** for the inspiration and use case
+- **MERN Stack Community** for excellent documentation and support
+- **Open Source Contributors** who make projects like this possible
+- **Beta Testers** who provided valuable feedback during development
+
+### 📧 Contact
+
+- **Project Maintainer**: [Your Name]
+- **Institution**: National University of Science and Technology (NUST)
+- **Email**: [your-email@nust.edu.pk]
+- **GitHub**: [Your GitHub Profile]
+
+---
+
+<div align="center">
+  <p>Made with ❤️ for NUST Community</p>
+  <p>
+    <a href="#-table-of-contents">Back to Top</a> •
+    <a href="https://github.com/your-repo/issues">Report Bug</a> •
+    <a href="https://github.com/your-repo/issues">Request Feature</a>
+  </p>
+</div>
 
