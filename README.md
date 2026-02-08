@@ -641,34 +641,7 @@ We welcome contributions to improve NHMS! Please follow these guidelines:
    - Link any related issues
    - Add screenshots for UI changes
 
-### 📝 Code Style Guidelines
 
-#### Backend (JavaScript/Node.js)
-```javascript
-// Use camelCase for variables and functions
-const getUserById = async (userId) => {
-  try {
-    // Always handle errors appropriately
-    const user = await User.findById(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
-    return user;
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    throw error;
-  }
-};
-
-// Use meaningful names and JSDoc comments
-/**
- * Creates a new hostel with room allocation
- * @param {Object} hostelData - Hostel information
- * @param {string} hostelData.name - Hostel name
- * @param {number} hostelData.totalRooms - Total number of rooms
- * @returns {Promise<Object>} Created hostel object
- */
-```
 
 
 ### 🐛 Bug Reports
