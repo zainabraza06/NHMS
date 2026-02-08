@@ -21,8 +21,7 @@
 - [🧪 Testing](#-testing)
 - [🚀 Deployment](#-deployment)
 - [🤝 Contributing](#-contributing)
-- [🐛 Troubleshooting](#-troubleshooting)
-- [📄 License](#-license)
+
 
 ---
 
