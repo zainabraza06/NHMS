@@ -321,7 +321,8 @@ npm run dev
 npm start
 
 # Run tests
-npm run test:logic
+node tests/billing.test.js
+node tests/messOff.test.js
 ```
 
 ### 3. 🎨 Frontend Configuration
@@ -562,8 +563,8 @@ node scripts/seedUsers.js
 # Seed billing data  
 node scripts/seedChallans.js
 
-# Verify business logic
-node scripts/verifyRefinedLogic.js
+# register admin
+node scripts/registerAdmin.js
 ```
 
 ---
@@ -604,7 +605,7 @@ We welcome contributions to improve NHMS! Please follow these guidelines:
 
 1. **Fork the repository**
    ```bash
-   git clone https://github.com/your-username/nhms.git
+   git clone https://github.com/zainabraza06/nhms.git
    cd nhms
    ```
 
@@ -627,7 +628,7 @@ We welcome contributions to improve NHMS! Please follow these guidelines:
 5. **Test your changes**
    ```bash
    # Backend tests
-   cd backend && npm run test:logic
+   cd backend && node tests/billing.test.js && node tests/messOff.test.js
    
    # Frontend checks
    cd frontend && npm run type-check && npm run lint
