@@ -481,98 +481,6 @@ User login
 
 ---
 
-## 🗄️ Database Schema
-
-### 👤 User Model (Base Model with Discriminators)
-```javascript
-{
-  firstName: String,
-  lastName: String,
-  email: String (unique),
-  password: String (hashed),
-  phoneNumber: String,
-  role: Enum ['ADMIN', 'HOSTEL_MANAGER', 'CLEANING_STAFF', 'HOSTELITE'],
-  isActive: Boolean,
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-### 🏠 Hostelite Model (Discriminator)
-```javascript
-{
-  // Inherits from User
-  rollNumber: String (unique),
-  roomNumber: String,
-  hostel: ObjectId (ref: Hostel),
-  emergencyContact: Object,
-  guardianInfo: Object,
-  messOptOut: Boolean,
-  messOptOutDates: [Date]
-}
-```
-
-### 🏨 Hostel Manager Model (Discriminator)
-```javascript
-{
-  // Inherits from User  
-  employeeId: String (unique),
-  assignedHostel: ObjectId (ref: Hostel)
-}
-```
-
-### 🧹 Cleaning Staff Model (Discriminator)
-```javascript
-{
-  // Inherits from User
-  employeeId: String (unique),
-  assignedHostels: [ObjectId] (ref: Hostel),
-  shiftTiming: String
-}
-```
-
-### 🏢 Hostel Model
-```javascript
-{
-  name: String,
-  location: String,
-  totalRooms: Number,
-  facilities: [String],
-  manager: ObjectId (ref: HostelManager),
-  isActive: Boolean,
-  createdAt: Date
-}
-```
-
-### 📝 Request Model (Base Model)
-```javascript
-{
-  hostelite: ObjectId (ref: Hostelite),
-  type: Enum ['LEAVE', 'CLEANING', 'MESS_OFF'],
-  status: Enum ['PENDING', 'APPROVED', 'REJECTED'],
-  submissionDate: Date,
-  reviewedBy: ObjectId (ref: User),
-  reviewDate: Date,
-  comments: String
-}
-```
-
-### 💰 Challan Model
-```javascript
-{
-  hostelite: ObjectId (ref: Hostelite),
-  month: Number,
-  year: Number,
-  amount: Number,
-  dueDate: Date,
-  paidDate: Date,
-  status: Enum ['PENDING', 'PAID', 'OVERDUE'],
-  paymentMethod: String,
-  stripePaymentIntentId: String
-}
-```
-
----
 
 ## 👥 User Roles & Permissions
 
@@ -662,6 +570,11 @@ node scripts/verifyRefinedLogic.js
 ---
 
 ## 🚀 Deployment
+
+### 📍 Current Hosting
+
+- Backend API is deployed on Render.
+- Frontend (Next.js) is deployed on Vercel.
 
 ### 🌐 Environment Preparation
 
@@ -796,10 +709,6 @@ When reporting bugs, please include:
 
 <div align="center">
   <p>Made with ❤️ for NUST Community</p>
-  <p>
-    <a href="#-table-of-contents">Back to Top</a> •
-    <a href="https://github.com/your-repo/issues">Report Bug</a> •
-    <a href="https://github.com/your-repo/issues">Request Feature</a>
-  </p>
+ 
 </div>
 
