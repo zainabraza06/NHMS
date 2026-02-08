@@ -168,7 +168,7 @@ Nust_Hostel_Management_System/
 │   ├── 📁 scripts/
 │   │   ├── seedUsers.js             # Database seeding
 │   │   ├── seedChallans.js          # Sample billing data
-│   │   └── verifyRefinedLogic.js    # Logic verification
+│   │  
 │   ├── 📁 services/
 │   │   └── cronService.js           # Scheduled tasks
 │   ├── 📁 utils/
@@ -300,15 +300,10 @@ NODE_ENV=development
 # Frontend URL (for CORS)
 CLIENT_URL=http://localhost:3000
 
-# Email Configuration (optional)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password
+
 
 # Stripe Configuration (for payments)
 STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 ```
 
 #### Start Backend Server
