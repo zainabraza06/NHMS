@@ -1,5 +1,6 @@
 import Hostelite from '../models/Hostelite.js';
 import Request from '../models/Request.js';
+import MessOffRequest from '../models/MessOffRequest.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 
 export const getHosteliteDashboard = asyncHandler(async (req, res) => {
@@ -18,6 +19,21 @@ export const getHosteliteDashboard = asyncHandler(async (req, res) => {
   const pendingRequests = await Request.countDocuments({ hostelite: userId, status: 'PENDING' });
   const rejectedRequests = await Request.countDocuments({ hostelite: userId, status: 'REJECTED' });
 
+  // Calculate Mess-Off Days Availed for current month
+  const now = new Date();
+  const monthKey = `${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getFullYear()}`;
+
+  const messOffRequests = await MessOffRequest.find({
+    hostelite: userId,
+    status: 'APPROVED',
+    [`approvedDaysPerMonth.${monthKey}`]: { $exists: true }
+  });
+
+  let messOffDaysAvailed = 0;
+  messOffRequests.forEach(req => {
+    messOffDaysAvailed += req.approvedDaysPerMonth.get(monthKey) || 0;
+  });
+
   res.json({
     success: true,
     message: 'Dashboard data retrieved successfully',
@@ -34,7 +50,9 @@ export const getHosteliteDashboard = asyncHandler(async (req, res) => {
       totalRequests,
       approvedRequests,
       pendingRequests,
-      rejectedRequests
+      rejectedRequests,
+      messOffDaysAvailed,
+      messOffDaysRemaining: Math.max(0, 12 - messOffDaysAvailed)
     }
   });
 });
@@ -52,10 +70,10 @@ export const getHosteliteRequests = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Hostelite not found' });
   }
 
-  res.json({ 
+  res.json({
     success: true,
     message: 'Requests retrieved successfully',
-    data: hostelite.requests || [] 
+    data: hostelite.requests || []
   });
 });
 
@@ -68,10 +86,10 @@ export const getHosteliteProfile = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Hostelite not found' });
   }
 
-  res.json({ 
+  res.json({
     success: true,
     message: 'Profile retrieved successfully',
-    data: hostelite 
+    data: hostelite
   });
 });
 
@@ -93,10 +111,10 @@ export const updateHosteliteProfile = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Hostelite not found' });
   }
 
-  res.json({ 
+  res.json({
     success: true,
-    message: 'Profile updated successfully', 
-    data: hostelite 
+    message: 'Profile updated successfully',
+    data: hostelite
   });
 });
 

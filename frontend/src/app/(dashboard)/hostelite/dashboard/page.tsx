@@ -12,6 +12,8 @@ interface DashboardStats {
   approvedRequests: number;
   pendingRequests: number;
   rejectedRequests: number;
+  messOffDaysAvailed: number;
+  messOffDaysRemaining: number;
 }
 
 export default function HosteliteDashboardPage() {
@@ -21,6 +23,8 @@ export default function HosteliteDashboardPage() {
     approvedRequests: 0,
     pendingRequests: 0,
     rejectedRequests: 0,
+    messOffDaysAvailed: 0,
+    messOffDaysRemaining: 12,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -35,6 +39,8 @@ export default function HosteliteDashboardPage() {
             approvedRequests: response.data.approvedRequests || 0,
             pendingRequests: response.data.pendingRequests || 0,
             rejectedRequests: response.data.rejectedRequests || 0,
+            messOffDaysAvailed: response.data.messOffDaysAvailed || 0,
+            messOffDaysRemaining: response.data.messOffDaysRemaining ?? 12,
           });
         } else {
           setError('Failed to load dashboard');
@@ -78,7 +84,7 @@ export default function HosteliteDashboardPage() {
             <div className="spinner"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
             <StatCard
               title="Total Requests"
               value={stats.totalRequests}
@@ -106,6 +112,14 @@ export default function HosteliteDashboardPage() {
               icon="❌"
               gradient="from-rose-400 to-rose-600"
               delay="stagger-4"
+            />
+            <StatCard
+              title="Mess-Off Left"
+              value={stats.messOffDaysRemaining}
+              subValue={`/ 12 days`}
+              icon="🍽️"
+              gradient="from-indigo-400 to-indigo-600"
+              delay="stagger-5"
             />
           </div>
         )}
@@ -150,12 +164,13 @@ export default function HosteliteDashboardPage() {
 interface StatCardProps {
   title: string;
   value: number;
+  subValue?: string;
   icon: string;
   gradient: string;
   delay: string;
 }
 
-function StatCard({ title, value, icon, gradient, delay }: StatCardProps) {
+function StatCard({ title, value, subValue, icon, gradient, delay }: StatCardProps) {
   return (
     <div className={`relative overflow-hidden rounded-2xl p-5 bg-white shadow-aqua border border-aqua-100/30 animate-slide-up ${delay} group hover:shadow-aqua-lg hover:-translate-y-1 transition-all duration-300`}>
       <div className={`absolute -right-4 -top-4 w-20 h-20 rounded-full bg-gradient-to-br ${gradient} opacity-10 group-hover:opacity-20 transition-opacity`}></div>
@@ -163,7 +178,10 @@ function StatCard({ title, value, icon, gradient, delay }: StatCardProps) {
         <div className="flex items-center justify-between mb-3">
           <span className="text-2xl">{icon}</span>
         </div>
-        <p className={`text-3xl md:text-4xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>{value}</p>
+        <div className="flex items-baseline gap-1">
+          <p className={`text-3xl md:text-4xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>{value}</p>
+          {subValue && <span className="text-xs text-gray-400 font-semibold">{subValue}</span>}
+        </div>
         <p className="text-gray-500 text-sm mt-1">{title}</p>
       </div>
     </div>

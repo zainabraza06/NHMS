@@ -121,6 +121,30 @@ export interface Challan {
 
 export type Request = LeaveRequest | CleaningRequest | MessOffRequest;
 
+// Complaint Types
+export type ComplaintCategory = 'PLUMBING' | 'ELECTRICAL' | 'INTERNET' | 'CLEANING' | 'MESS' | 'OTHER';
+export type ComplaintStatus = 'PENDING' | 'IN_PROGRESS' | 'RESOLVED';
+
+export interface Complaint {
+  _id: string;
+  hostelite: string | Hostelite;
+  hostel: string | Hostel;
+  title: string;
+  description: string;
+  category: ComplaintCategory;
+  status: ComplaintStatus;
+  managerComments?: string;
+  resolvedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ComplaintForm {
+  title: string;
+  description: string;
+  category: ComplaintCategory;
+}
+
 // Auth Types
 export interface LoginCredentials {
   email: string;

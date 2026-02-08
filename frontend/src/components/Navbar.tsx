@@ -17,6 +17,9 @@ export const Navbar: React.FC = () => {
   const roleBase = user ? getRoleBasePath(user.role) : '';
   const navLinks = user ? [
     { name: 'Dashboard', href: `/${roleBase}/dashboard` },
+    ...((user.role === 'HOSTELITE' || user.role === 'HOSTEL_MANAGER') ? [
+      { name: 'Complaints', href: `/${roleBase}/complaints` }
+    ] : []),
     { name: 'Profile', href: `/${roleBase}/profile` },
   ] : [];
 
@@ -44,8 +47,8 @@ export const Navbar: React.FC = () => {
                 key={link.name}
                 href={link.href}
                 className={`px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${pathname === link.href
-                    ? 'bg-aqua-50 text-aqua-700'
-                    : 'text-gray-600 hover:text-aqua-600 hover:bg-aqua-50/50'
+                  ? 'bg-aqua-50 text-aqua-700'
+                  : 'text-gray-600 hover:text-aqua-600 hover:bg-aqua-50/50'
                   }`}
               >
                 {link.name}

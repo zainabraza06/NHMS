@@ -29,6 +29,12 @@ export const API_ENDPOINTS = {
   MANAGER_REQUESTS: '/manager/requests',
   MANAGER_HOSTELITES: '/manager/hostelites',
   MANAGER_STAFF: '/manager/staff',
+
+  // Complaints
+  COMPLAINTS_BASE: '/complaints',
+  COMPLAINTS_MY: '/complaints/my',
+  COMPLAINTS_ALL: '/complaints/all',
+  COMPLAINTS_RESOLVE: (id: string) => `/complaints/${id}/resolve`,
 };
 
 export const USER_ROLES = {
@@ -43,6 +49,12 @@ export const REQUEST_STATUS = {
   REJECTED: 'REJECTED',
   CANCELLED: 'CANCELLED',
   COMPLETED: 'COMPLETED',
+};
+
+export const COMPLAINT_STATUS = {
+  PENDING: 'PENDING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
 };
 
 export const CLEANING_TYPES = {

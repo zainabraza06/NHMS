@@ -7,6 +7,8 @@ import {
   Request,
   ApiResponse,
   DashboardStats,
+  Complaint,
+  ComplaintForm,
 } from '@/types';
 
 export const requestService = {
@@ -106,6 +108,47 @@ export const requestService = {
     const response = await apiClient.put<ApiResponse<Request>>(
       `/staff/requests/${requestId}`,
       { status, notes }
+    );
+    return response.data;
+  },
+};
+
+export const complaintService = {
+  async submitComplaint(data: ComplaintForm): Promise<ApiResponse<Complaint>> {
+    const response = await apiClient.post<ApiResponse<Complaint>>(
+      API_ENDPOINTS.COMPLAINTS_BASE,
+      data
+    );
+    return response.data;
+  },
+
+  async getMyComplaints(
+    page: number = 1,
+    limit: number = 10
+  ): Promise<ApiResponse<Complaint[]>> {
+    const response = await apiClient.get<ApiResponse<Complaint[]>>(
+      `${API_ENDPOINTS.COMPLAINTS_MY}?page=${page}&limit=${limit}`
+    );
+    return response.data;
+  },
+
+  async getAllComplaints(
+    page: number = 1,
+    limit: number = 10
+  ): Promise<ApiResponse<Complaint[]>> {
+    const response = await apiClient.get<ApiResponse<Complaint[]>>(
+      `${API_ENDPOINTS.COMPLAINTS_ALL}?page=${page}&limit=${limit}`
+    );
+    return response.data;
+  },
+
+  async resolveComplaint(
+    complaintId: string,
+    data: { status: string; managerComments: string }
+  ): Promise<ApiResponse<Complaint>> {
+    const response = await apiClient.patch<ApiResponse<Complaint>>(
+      API_ENDPOINTS.COMPLAINTS_RESOLVE(complaintId),
+      data
     );
     return response.data;
   },

@@ -15,13 +15,20 @@ export default function StaffTasksPage() {
   const [error, setError] = useState('');
   const [selectedTask, setSelectedTask] = useState<Request | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const limit = 9;
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await userService.getStaffAssignedRequests();
+        setIsLoading(true);
+        const response = await userService.getStaffAssignedRequests(page, limit);
         if (response.success && response.data) {
           setTasks(Array.isArray(response.data) ? response.data : []);
+          setTotalPages(response.pagination?.pages || 1);
+          setTotalItems(response.pagination?.total || 0);
         } else {
           setError('Failed to load tasks');
         }
@@ -33,16 +40,20 @@ export default function StaffTasksPage() {
     };
 
     fetchTasks();
-  }, []);
+  }, [page]);
 
   const handleMarkComplete = async (requestId: string) => {
+    if (!requestId) {
+      setError('Unable to update: missing request ID');
+      return;
+    }
     setUpdatingStatus(true);
     try {
       const response = await requestService.updateCleaningRequestStatus(requestId, REQUEST_STATUS.COMPLETED);
       if (response.success) {
         setTasks((prev) =>
           prev.map((task) =>
-            task.id === requestId ? { ...task, status: REQUEST_STATUS.COMPLETED as any } : task
+            getRequestId(task) === requestId ? { ...task, status: REQUEST_STATUS.COMPLETED as any } : task
           )
         );
         setSelectedTask(null);
@@ -110,7 +121,7 @@ export default function StaffTasksPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tasks.map((task, index) => (
               <div
-                key={task.id}
+                key={getRequestId(task) || `${task.requestType}-${index}`}
                 className={`stat-card animate-slide-up stagger-${Math.min(index + 1, 6)}`}
               >
                 <div className="flex items-start justify-between mb-4">
@@ -156,9 +167,33 @@ export default function StaffTasksPage() {
           </div>
         )}
 
+        {totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
+            <p className="text-sm text-gray-500">
+              Page {page} of {totalPages} · {totalItems} total
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={page === 1}
+                className="btn-secondary px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={page === totalPages}
+                className="btn-secondary px-4 py-2 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Modal */}
         {selectedTask && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-fade-in">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[9999] animate-fade-in">
             <div className="glass-card p-8 max-w-md w-full animate-scale-in">
               <div className="flex items-center mb-6">
                 <span className="text-3xl mr-3">🧹</span>
@@ -190,8 +225,8 @@ export default function StaffTasksPage() {
                     return (
                       <>
                         <button
-                          onClick={() => handleMarkComplete(selectedTask.id)}
-                          disabled={updatingStatus || isTooEarly}
+                          onClick={() => handleMarkComplete(getRequestId(selectedTask))}
+                          disabled={updatingStatus || isTooEarly || !getRequestId(selectedTask)}
                           className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 font-semibold text-white shadow-md
                                      transition-all duration-300 hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:grayscale disabled:transform-none"
                         >
@@ -241,4 +276,8 @@ function InfoRow({ label, value, highlight }: { label: string; value: string; hi
       </span>
     </div>
   );
+}
+
+function getRequestId(request: Request) {
+  return (request as any)._id || request.id;
 }

@@ -71,6 +71,11 @@ export default function HosteliteRequestsPage() {
   const isCleaningRequest = (req: Request): req is CleaningRequest => req.requestType === 'CLEANING_REQUEST';
   const isMessOffRequest = (req: Request): req is MessOffRequest => req.requestType === 'MESS_OFF_REQUEST';
 
+  const getRequestKey = (request: Request, index: number) => {
+    const fallbackId = (request as { _id?: string })._id;
+    return request.id || fallbackId || `${request.requestType}-${request.createdAt}-${index}`;
+  };
+
   return (
     <ProtectedRoute allowedRoles={[USER_ROLES.HOSTELITE]}>
       <div className="page-container">
@@ -114,7 +119,7 @@ export default function HosteliteRequestsPage() {
               const typeInfo = getRequestTypeLabel(request.requestType);
               return (
                 <div
-                  key={request.id}
+                  key={getRequestKey(request, index)}
                   className={`stat-card animate-slide-up stagger-${Math.min(index + 1, 6)}`}
                 >
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
