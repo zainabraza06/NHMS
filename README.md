@@ -16,7 +16,6 @@
 - [🚀 Quick Start](#-quick-start)
 - [📋 Detailed Setup](#-detailed-setup)
 - [🔌 API Documentation](#-api-documentation)
-- [🗄️ Database Schema](#-database-schema)
 - [👥 User Roles & Permissions](#-user-roles--permissions)
 - [🧪 Testing](#-testing)
 - [🚀 Deployment](#-deployment)
