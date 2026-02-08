@@ -19,21 +19,18 @@ export function ChallanList({ limit, showViewAll = false, isPaginated = false }:
     const [error, setError] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [statusFilter, setStatusFilter] = useState('');
+    const [monthFilter, setMonthFilter] = useState('');
 
     const fetchChallans = async (page: number) => {
         try {
             setIsLoading(true);
-            const res = await billingService.getMyChallans(page, limit || 10);
+            const res = await billingService.getMyChallans(page, limit || 10, {
+                status: statusFilter || undefined,
+                month: monthFilter || undefined
+            });
             if (res.success && res.data) {
-                // Sort by date ascending (MM-YYYY format)
-                // Note: Backend also sorts now, but this ensures consistency
-                const sorted = [...res.data].sort((a, b) => {
-                    const [monthA, yearA] = a.month.split('-').map(Number);
-                    const [monthB, yearB] = b.month.split('-').map(Number);
-                    if (yearA !== yearB) return yearA - yearB;
-                    return monthA - monthB;
-                });
-                setChallans(sorted);
+                setChallans(res.data);
                 if (res.pagination) {
                     setTotalPages(res.pagination.pages);
                     setCurrentPage(res.pagination.page);
@@ -51,7 +48,7 @@ export function ChallanList({ limit, showViewAll = false, isPaginated = false }:
 
     useEffect(() => {
         fetchChallans(1);
-    }, []);
+    }, [statusFilter, monthFilter]);
 
     if (isLoading && challans.length === 0) {
         return (
@@ -72,14 +69,40 @@ export function ChallanList({ limit, showViewAll = false, isPaginated = false }:
                         <span className="px-3 py-1 bg-aqua-100 text-aqua-700 rounded-lg text-sm font-semibold">
                             {challans.length} {challans.length === 1 ? 'Challan' : 'Challans'}
                         </span>
-                        {showViewAll && (
-                            <Link
-                                href="/hostelite/bills"
-                                className="text-aqua-600 hover:text-aqua-700 text-sm font-bold flex items-center gap-1 group transition-all"
+                        <div className="flex flex-wrap items-center gap-3">
+                            <input
+                                type="month"
+                                value={monthFilter ? `${monthFilter.split('-')[1]}-${monthFilter.split('-')[0]}` : ''}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (!val) { setMonthFilter(''); }
+                                    else {
+                                        const [y, m] = val.split('-');
+                                        setMonthFilter(`${m}-${y}`);
+                                    }
+                                    setCurrentPage(1);
+                                }}
+                                className="bg-white border border-aqua-100 rounded-xl px-4 py-2 text-sm font-semibold outline-none focus:border-aqua-400 transition-all min-w-[140px] shadow-sm"
+                            />
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                                className="bg-white border border-aqua-100 rounded-xl px-4 py-2 text-sm font-semibold outline-none focus:border-aqua-400 transition-all min-w-[130px] shadow-sm"
                             >
-                                View All <span className="group-hover:translate-x-1 transition-transform">→</span>
-                            </Link>
-                        )}
+                                <option value="">All Statuses</option>
+                                <option value="UNPAID">Unpaid</option>
+                                <option value="PAID">Paid</option>
+                                <option value="OVERDUE">Overdue</option>
+                            </select>
+                            {showViewAll && (
+                                <Link
+                                    href="/hostelite/bills"
+                                    className="text-aqua-600 hover:text-aqua-700 text-sm font-bold flex items-center gap-1 group transition-all"
+                                >
+                                    View All <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                </Link>
+                            )}
+                        </div>
                     </div>
                 </div>
 

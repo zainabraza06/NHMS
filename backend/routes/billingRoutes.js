@@ -2,6 +2,8 @@ import express from 'express';
 import {
     generateMonthlyChallans,
     getMyChallans,
+    getAllChallansGlobal,
+    getHostelChallans,
     createPaymentIntent,
     confirmPayment
 } from '../controllers/billingController.js';
@@ -19,5 +21,9 @@ router.post('/confirm', authorize('HOSTELITE'), confirmPayment);
 
 // Manager routes
 router.post('/generate-monthly', authorize('HOSTEL_MANAGER'), generateMonthlyChallans);
+router.get('/hostel', authorize('HOSTEL_MANAGER'), getHostelChallans);
+
+// Admin routes
+router.get('/all', authorize('ADMIN'), getAllChallansGlobal);
 
 export default router;

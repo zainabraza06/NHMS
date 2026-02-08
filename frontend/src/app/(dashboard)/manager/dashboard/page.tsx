@@ -13,6 +13,7 @@ interface DashboardStats {
   rejectedRequests: number;
   totalHostelites: number;
   totalStaff: number;
+  occupancyRate: string;
 }
 
 export default function ManagerDashboardPage() {
@@ -24,6 +25,7 @@ export default function ManagerDashboardPage() {
     rejectedRequests: 0,
     totalHostelites: 0,
     totalStaff: 0,
+    occupancyRate: '0%',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -41,6 +43,7 @@ export default function ManagerDashboardPage() {
             rejectedRequests: statsData.rejectedRequests || 0,
             totalHostelites: statsData.totalHostelites || 0,
             totalStaff: statsData.totalStaff || 0,
+            occupancyRate: statsData.occupancyRate || '0%',
           });
         } else {
           setError('Failed to load dashboard');
@@ -93,6 +96,7 @@ export default function ManagerDashboardPage() {
               <StatCard title="Rejected" value={stats.rejectedRequests} icon="❌" gradient="from-rose-400 to-rose-600" delay="stagger-4" />
               <StatCard title="Hostelites" value={stats.totalHostelites} icon="👥" gradient="from-blue-400 to-blue-600" delay="stagger-5" />
               <StatCard title="Staff" value={stats.totalStaff} icon="🧹" gradient="from-purple-400 to-purple-600" delay="stagger-6" />
+              <StatCard title="Occupancy" value={stats.occupancyRate} icon="📊" gradient="from-emerald-400 to-emerald-600" delay="stagger-7" />
             </div>
 
             {/* Quick Actions */}
@@ -123,7 +127,7 @@ interface StatCardProps {
   delay: string;
 }
 
-function StatCard({ title, value, icon, gradient, delay }: StatCardProps) {
+function StatCard({ title, value, icon, gradient, delay }: { title: string, value: any, icon: string, gradient: string, delay: string }) {
   return (
     <div className={`relative overflow-hidden rounded-2xl p-5 bg-white shadow-aqua border border-aqua-100/30 animate-slide-up ${delay} group hover:shadow-aqua-lg hover:-translate-y-1 transition-all duration-300`}>
       <div className={`absolute -right-4 -top-4 w-20 h-20 rounded-full bg-gradient-to-br ${gradient} opacity-10 group-hover:opacity-20 transition-opacity`}></div>

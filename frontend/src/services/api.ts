@@ -9,6 +9,8 @@ import {
   DashboardStats,
   Complaint,
   ComplaintForm,
+  Hostel,
+  Challan,
 } from '@/types';
 
 export const requestService = {
@@ -152,4 +154,90 @@ export const complaintService = {
     );
     return response.data;
   },
+};
+
+export const adminService = {
+  async getGlobalStats(): Promise<ApiResponse> {
+    const response = await apiClient.get<ApiResponse>(API_ENDPOINTS.ADMIN_STATS);
+    return response.data;
+  },
+
+  async getAllComplaintsGlobal(
+    page: number = 1,
+    limit: number = 10,
+    filters: any = {}
+  ): Promise<ApiResponse<Complaint[]>> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...filters
+    });
+    const response = await apiClient.get<ApiResponse<Complaint[]>>(
+      `${API_ENDPOINTS.ADMIN_COMPLAINTS}?${params.toString()}`
+    );
+    return response.data;
+  },
+
+  async getAllRequestsGlobal(
+    page: number = 1,
+    limit: number = 10,
+    filters: any = {}
+  ): Promise<ApiResponse<Request[]>> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...filters
+    });
+    const response = await apiClient.get<ApiResponse<Request[]>>(
+      `${API_ENDPOINTS.ADMIN_REQUESTS}?${params.toString()}`
+    );
+    return response.data;
+  },
+
+  async getAllHostels(): Promise<ApiResponse<Hostel[]>> {
+    const response = await apiClient.get<ApiResponse<Hostel[]>>(API_ENDPOINTS.ADMIN_HOSTELS);
+    return response.data;
+  },
+};
+
+export const billingService = {
+  async getMyChallans(page: number = 1, limit: number = 10): Promise<ApiResponse<Challan[]>> {
+    const response = await apiClient.get<ApiResponse<Challan[]>>(
+      `${API_ENDPOINTS.BILLING_MY}?page=${page}&limit=${limit}`
+    );
+    return response.data;
+  },
+
+  async getGlobalChallans(page: number = 1, limit: number = 10, filters: any = {}): Promise<ApiResponse<Challan[]>> {
+    const cleanFilters: any = {};
+    Object.keys(filters).forEach(key => {
+      if (filters[key] !== undefined && filters[key] !== '') {
+        cleanFilters[key] = filters[key];
+      }
+    });
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString(), ...cleanFilters });
+    const response = await apiClient.get<ApiResponse<Challan[]>>(
+      `${API_ENDPOINTS.BILLING_ALL}?${params.toString()}`
+    );
+    return response.data;
+  },
+
+  async getHostelChallans(page: number = 1, limit: number = 10, filters: any = {}): Promise<ApiResponse<Challan[]>> {
+    const cleanFilters: any = {};
+    Object.keys(filters).forEach(key => {
+      if (filters[key] !== undefined && filters[key] !== '') {
+        cleanFilters[key] = filters[key];
+      }
+    });
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString(), ...cleanFilters });
+    const response = await apiClient.get<ApiResponse<Challan[]>>(
+      `${API_ENDPOINTS.BILLING_HOSTEL}?${params.toString()}`
+    );
+    return response.data;
+  },
+
+  async generateMonthlyChallans(month: string): Promise<ApiResponse> {
+    const response = await apiClient.post<ApiResponse>(API_ENDPOINTS.BILLING_GENERATE, { month });
+    return response.data;
+  }
 };

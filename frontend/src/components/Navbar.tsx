@@ -17,8 +17,11 @@ export const Navbar: React.FC = () => {
   const roleBase = user ? getRoleBasePath(user.role) : '';
   const navLinks = user ? [
     { name: 'Dashboard', href: `/${roleBase}/dashboard` },
-    ...((user.role === 'HOSTELITE' || user.role === 'HOSTEL_MANAGER') ? [
+    ...((user.role === 'HOSTELITE' || user.role === 'HOSTEL_MANAGER' || user.role === 'ADMIN') ? [
       { name: 'Complaints', href: `/${roleBase}/complaints` }
+    ] : []),
+    ...(user.role === 'ADMIN' || user.role === 'HOSTEL_MANAGER' ? [
+      { name: 'Billing', href: `/${roleBase}/billing` }
     ] : []),
     { name: 'Profile', href: `/${roleBase}/profile` },
   ] : [];
@@ -99,6 +102,8 @@ function getRoleBasePath(role: string) {
       return 'manager';
     case 'CLEANING_STAFF':
       return 'staff';
+    case 'ADMIN':
+      return 'admin';
     default:
       return '';
   }

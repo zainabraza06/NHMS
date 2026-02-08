@@ -16,6 +16,7 @@ import managerRoutes from './routes/managerRoutes.js';
 import requestRoutes from './routes/requestRoutes.js';
 import billingRoutes from './routes/billingRoutes.js';
 import complaintRoutes from './routes/complaintRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use('/api/manager', managerRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/complaints', complaintRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {

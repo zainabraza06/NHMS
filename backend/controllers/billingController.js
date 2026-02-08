@@ -1,5 +1,6 @@
 import Challan from '../models/Challan.js';
 import Hostelite from '../models/Hostelite.js';
+import HostelManager from '../models/HostelManager.js';
 import MessOffRequest from '../models/MessOffRequest.js';
 import Hostel from '../models/Hostel.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
@@ -135,9 +136,21 @@ export const getMyChallans = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+    const { status, month } = req.query;
 
-    const total = await Challan.countDocuments({ hostelite: hosteliteId });
-    const challans = await Challan.find({ hostelite: hosteliteId })
+    // Automatically update overdue status for this hostelite's unpaid challans past their due date
+    const now = new Date();
+    await Challan.updateMany(
+        { hostelite: hosteliteId, status: 'UNPAID', dueDate: { $lt: now } },
+        { $set: { status: 'OVERDUE' } }
+    );
+
+    const filter = { hostelite: hosteliteId };
+    if (status && status !== 'undefined') filter.status = status;
+    if (month && month !== 'undefined') filter.month = month;
+
+    const total = await Challan.countDocuments(filter);
+    const challans = await Challan.find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
@@ -232,5 +245,105 @@ export const confirmPayment = asyncHandler(async (req, res) => {
         success: true,
         message: 'Payment confirmed successfully',
         data: challan
+    });
+});
+
+/**
+ * Get all challans globally (Admin oversight)
+ */
+export const getAllChallansGlobal = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10, status, month, hostel, hostelite } = req.query;
+
+    // Automatically update overdue status for unpaid challans past their due date
+    const now = new Date();
+    await Challan.updateMany(
+        { status: 'UNPAID', dueDate: { $lt: now } },
+        { $set: { status: 'OVERDUE' } }
+    );
+
+    const filter = {};
+    if (status && status !== 'undefined') filter.status = status;
+    if (month && month !== 'undefined') filter.month = month;
+    if (hostelite && hostelite !== 'undefined') filter.hostelite = hostelite;
+
+    // To filter by hostel, we need to populate hostelite first or use aggregation
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    let query = Challan.find(filter)
+        .populate({
+            path: 'hostelite',
+            select: 'firstName lastName roomNumber hostel',
+            populate: { path: 'hostel', select: 'name hostelCode' }
+        })
+        .sort({ createdAt: -1 });
+
+    const challans = await query.skip(skip).limit(parseInt(limit));
+
+    // Filter by hostel if provided (since it's nested in hostelite)
+    let filteredChallans = challans;
+    if (hostel) {
+        filteredChallans = challans.filter(c => c.hostelite?.hostel?._id.toString() === hostel);
+    }
+
+    const total = await Challan.countDocuments(filter);
+
+    res.json({
+        success: true,
+        data: filteredChallans,
+        pagination: {
+            total,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            pages: Math.ceil(total / parseInt(limit))
+        }
+    });
+});
+
+/**
+ * Get all challans for a specific hostel (Manager oversight)
+ */
+export const getHostelChallans = asyncHandler(async (req, res) => {
+    const managerId = req.user.userId;
+    const { page = 1, limit = 10, status, month, hostelite } = req.query;
+
+    const manager = await HostelManager.findById(managerId);
+    if (!manager) {
+        return res.status(404).json({ success: false, message: 'Manager not found' });
+    }
+
+    const hostelites = await Hostelite.find({ hostel: manager.hostel }).select('_id');
+    const hosteliteIds = hostelites.map(h => h._id);
+
+    // Automatically update overdue status for unpaid challans past their due date
+    const now = new Date();
+    await Challan.updateMany(
+        { hostelite: { $in: hosteliteIds }, status: 'UNPAID', dueDate: { $lt: now } },
+        { $set: { status: 'OVERDUE' } }
+    );
+
+    const filter = { hostelite: { $in: hosteliteIds } };
+    if (status && status !== 'undefined') filter.status = status;
+    if (month && month !== 'undefined') filter.month = month;
+    if (hostelite && hostelite !== 'undefined') filter.hostelite = hostelite;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const challans = await Challan.find(filter)
+        .populate('hostelite', 'firstName lastName roomNumber email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit));
+
+    const total = await Challan.countDocuments(filter);
+
+    res.json({
+        success: true,
+        data: challans,
+        pagination: {
+            total,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            pages: Math.ceil(total / parseInt(limit))
+        }
     });
 });

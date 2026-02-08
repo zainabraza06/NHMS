@@ -49,9 +49,11 @@ export const getManagerDashboard = asyncHandler(async (req, res) => {
         totalStaff: staffCount,
         pendingRequests,
         rejectedRequests,
-        occupiedRooms: hostel.occupiedRooms,
+        occupiedRooms: hosteliteCount,
         totalRooms: hostel.totalRooms,
-        occupancyRate: ((hostel.occupiedRooms / hostel.totalRooms) * 100).toFixed(2) + '%'
+        occupancyRate: hostel.totalRooms
+          ? ((hosteliteCount / hostel.totalRooms) * 100).toFixed(2) + '%'
+          : '0.00%'
       }
     }
   });

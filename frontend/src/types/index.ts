@@ -1,4 +1,4 @@
-export type UserRole = 'HOSTELITE' | 'CLEANING_STAFF' | 'HOSTEL_MANAGER';
+export type UserRole = 'ADMIN' | 'HOSTELITE' | 'CLEANING_STAFF' | 'HOSTEL_MANAGER';
 export type RequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
 export type RequestType = 'LEAVE_REQUEST' | 'CLEANING_REQUEST' | 'MESS_OFF_REQUEST';
 export type CleaningType = 'ROUTINE' | 'DEEP_CLEANING' | 'EMERGENCY';

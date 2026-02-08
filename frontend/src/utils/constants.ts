@@ -11,6 +11,14 @@ export const API_ENDPOINTS = {
   HOSTELITES_PROFILE: '/hostelites/profile',
   HOSTELITES_ALL: '/hostelites/all',
 
+  // Billing
+  BILLING_MY: '/billing/my-challans',
+  BILLING_PAY: '/billing/pay',
+  BILLING_CONFIRM: '/billing/confirm',
+  BILLING_GENERATE: '/billing/generate-monthly',
+  BILLING_ALL: '/billing/all',
+  BILLING_HOSTEL: '/billing/hostel',
+
   // Requests
   REQUESTS_LEAVE: '/requests/leave',
   REQUESTS_CLEANING: '/requests/cleaning',
@@ -35,9 +43,16 @@ export const API_ENDPOINTS = {
   COMPLAINTS_MY: '/complaints/my',
   COMPLAINTS_ALL: '/complaints/all',
   COMPLAINTS_RESOLVE: (id: string) => `/complaints/${id}/resolve`,
+
+  // Admin
+  ADMIN_STATS: '/admin/stats',
+  ADMIN_COMPLAINTS: '/admin/complaints',
+  ADMIN_REQUESTS: '/admin/requests',
+  ADMIN_HOSTELS: '/admin/hostels',
 };
 
 export const USER_ROLES = {
+  ADMIN: 'ADMIN',
   HOSTELITE: 'HOSTELITE',
   CLEANING_STAFF: 'CLEANING_STAFF',
   HOSTEL_MANAGER: 'HOSTEL_MANAGER',

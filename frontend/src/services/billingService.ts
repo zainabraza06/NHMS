@@ -2,8 +2,15 @@ import { apiClient } from '@/utils/api-client';
 import { Challan, ApiResponse } from '@/types';
 
 export const billingService = {
-    async getMyChallans(page: number = 1, limit: number = 10): Promise<ApiResponse<Challan[]>> {
-        const response = await apiClient.get<ApiResponse<Challan[]>>(`/billing/my-challans?page=${page}&limit=${limit}`);
+    async getMyChallans(page: number = 1, limit: number = 10, filters: any = {}): Promise<ApiResponse<Challan[]>> {
+        const cleanFilters: any = {};
+        Object.keys(filters).forEach(key => {
+            if (filters[key] !== undefined && filters[key] !== '') {
+                cleanFilters[key] = filters[key];
+            }
+        });
+        const params = new URLSearchParams({ page: page.toString(), limit: limit.toString(), ...cleanFilters });
+        const response = await apiClient.get<ApiResponse<Challan[]>>(`/billing/my-challans?${params.toString()}`);
         return response.data;
     },
 
